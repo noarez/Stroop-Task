@@ -49,13 +49,21 @@
           </div>
           
           <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label for="demo-gender" style="font-weight: bold; margin-bottom: 4px;">מגדר:</label>
-            <select id="demo-gender" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);" onchange="toggleGenderOther()">
-              <option value="" disabled selected>בחר/י...</option>
-              <option value="זכר">זכר</option>
-              <option value="נקבה">נקבה</option>
-              <option value="אחר">אחר</option>
-            </select>
+            <label style="font-weight: bold; margin-bottom: 4px;">מגדר:</label>
+            <div class="button-group">
+              <label class="btn-radio">
+                <input type="radio" name="demo-gender" value="זכר" required onchange="toggleGenderOther()">
+                <span>זכר</span>
+              </label>
+              <label class="btn-radio">
+                <input type="radio" name="demo-gender" value="נקבה" required onchange="toggleGenderOther()">
+                <span>נקבה</span>
+              </label>
+              <label class="btn-radio">
+                <input type="radio" name="demo-gender" value="אחר" required onchange="toggleGenderOther()">
+                <span>אחר</span>
+              </label>
+            </div>
           </div>
           <div id="demo-gender-other-wrap" style="margin-bottom: 12px; display: none; flex-direction: column;">
             <label for="demo-gender-other" style="font-weight: bold; margin-bottom: 4px;">פרט/י מגדר:</label>
@@ -73,12 +81,17 @@
           </div>
 
           <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label for="demo-has-add-lang" style="font-weight: bold; margin-bottom: 4px;">האם אתה דובר שפות נוספות?</label>
-            <select id="demo-has-add-lang" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);" onchange="toggleAddLang()">
-              <option value="" disabled selected>בחר/י...</option>
-              <option value="כן">כן</option>
-              <option value="לא">לא</option>
-            </select>
+            <label style="font-weight: bold; margin-bottom: 4px;">האם אתה דובר שפות נוספות?</label>
+            <div class="button-group">
+              <label class="btn-radio">
+                <input type="radio" name="demo-has-add-lang" value="כן" required onchange="toggleAddLang()">
+                <span>כן</span>
+              </label>
+              <label class="btn-radio">
+                <input type="radio" name="demo-has-add-lang" value="לא" required onchange="toggleAddLang()">
+                <span>לא</span>
+              </label>
+            </div>
           </div>
 
           <div id="demo-add-lang-wrap" style="display: none; background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; margin-bottom: 12px;">
@@ -103,14 +116,25 @@
             </div>
 
             <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-              <label for="demo-add-lang-freq" style="font-weight: bold; margin-bottom: 4px;">באיזו תדירות אתה משתמש בשפה זו ביומיום?</label>
-              <select id="demo-add-lang-freq" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
-                <option value="" disabled selected>בחר/י...</option>
-                <option value="בכלל לא">בכלל לא</option>
-                <option value="לעתים רחוקות">לעתים רחוקות</option>
-                <option value="מספר פעמים בשבוע">מספר פעמים בשבוע</option>
-                <option value="בכל יום">בכל יום</option>
-              </select>
+              <label style="font-weight: bold; margin-bottom: 4px;">באיזו תדירות אתה משתמש בשפה זו ביומיום?</label>
+              <div class="button-group">
+                <label class="btn-radio">
+                  <input type="radio" name="demo-add-lang-freq" value="בכלל לא">
+                  <span>בכלל לא</span>
+                </label>
+                <label class="btn-radio">
+                  <input type="radio" name="demo-add-lang-freq" value="לעתים רחוקות">
+                  <span>לעתים רחוקות</span>
+                </label>
+                <label class="btn-radio">
+                  <input type="radio" name="demo-add-lang-freq" value="מספר פעמים בשבוע">
+                  <span>פעמים בשבוע</span>
+                </label>
+                <label class="btn-radio">
+                  <input type="radio" name="demo-add-lang-freq" value="בכל יום">
+                  <span>בכל יום</span>
+                </label>
+              </div>
             </div>
           </div>
 

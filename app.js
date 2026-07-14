@@ -201,7 +201,7 @@ const DOM = {
 // ══════════════════════════════════════════
 
 function toggleGenderOther() {
-  const gender = document.getElementById('demo-gender').value;
+  const gender = document.querySelector('input[name="demo-gender"]:checked')?.value;
   const wrap = document.getElementById('demo-gender-other-wrap');
   const input = document.getElementById('demo-gender-other');
   if (gender === 'אחר') {
@@ -214,7 +214,7 @@ function toggleGenderOther() {
 }
 
 function toggleAddLang() {
-  const hasLang = document.getElementById('demo-has-add-lang').value;
+  const hasLang = document.querySelector('input[name="demo-has-add-lang"]:checked')?.value;
   const wrap = document.getElementById('demo-add-lang-wrap');
   const count = document.getElementById('demo-add-lang-count');
   const name = document.getElementById('demo-add-lang-name');
@@ -243,18 +243,18 @@ function submitDemographics(event) {
   event.preventDefault();
   
   STATE.age = parseInt(document.getElementById('demo-age').value, 10);
-  STATE.gender = document.getElementById('demo-gender').value;
+  STATE.gender = document.querySelector('input[name="demo-gender"]:checked')?.value;
   STATE.gender_other = document.getElementById('demo-gender-other').value || null;
   STATE.education_years = parseInt(document.getElementById('demo-education').value, 10);
   STATE.mother_tongue = document.getElementById('demo-mother-tongue').value;
-  STATE.has_add_lang = document.getElementById('demo-has-add-lang').value;
+  STATE.has_add_lang = document.querySelector('input[name="demo-has-add-lang"]:checked')?.value;
   
   if (STATE.has_add_lang === 'כן') {
     STATE.add_lang_count = parseInt(document.getElementById('demo-add-lang-count').value, 10);
     STATE.add_lang_name = document.getElementById('demo-add-lang-name').value;
     STATE.add_lang_age = parseInt(document.getElementById('demo-add-lang-age').value, 10);
     STATE.add_lang_prof = parseInt(document.getElementById('demo-add-lang-prof').value, 10);
-    STATE.add_lang_freq = document.getElementById('demo-add-lang-freq').value;
+    STATE.add_lang_freq = document.querySelector('input[name="demo-add-lang-freq"]:checked')?.value;
   } else {
     STATE.add_lang_count = null;
     STATE.add_lang_name = null;

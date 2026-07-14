@@ -1,0 +1,18 @@
+t=2026-07-14T19:04:54+0300 lvl=info msg="no configuration paths supplied"
+t=2026-07-14T19:04:54+0300 lvl=info msg="using configuration at default config path" path="/Users/noareznik/Library/Application Support/ngrok/ngrok.yml"
+t=2026-07-14T19:04:54+0300 lvl=info msg="open config file" path="/Users/noareznik/Library/Application Support/ngrok/ngrok.yml" err=nil
+t=2026-07-14T19:04:54+0300 lvl=info msg="FIPS 140 mode" enabled=false
+t=2026-07-14T19:04:54+0300 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2026-07-14T19:04:54+0300 lvl=info msg="client session established" obj=tunnels.session
+t=2026-07-14T19:04:54+0300 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-07-14T19:04:54+0300 lvl=info msg="update available" obj=updater
+t=2026-07-14T19:04:54+0300 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:3000 url=https://pseudoprostyle-easter-oathfully.ngrok-free.dev
+t=2026-07-14T19:04:57+0300 lvl=info msg=start pg=/api/tunnels id=ed72a450c13845ed
+t=2026-07-14T19:04:57+0300 lvl=info msg=end pg=/api/tunnels id=ed72a450c13845ed status=200 dur=236.542µs
+t=2026-07-14T19:05:26+0300 lvl=info msg="join connections" obj=join id=0a12f106b21d l=[::1]:3000 r=80.178.194.151:34834
+t=2026-07-14T19:06:28+0300 lvl=info msg="join connections" obj=join id=391853091fb9 l=[::1]:3000 r=80.178.194.151:42244
+t=2026-07-14T19:06:34+0300 lvl=info msg="join connections" obj=join id=48cfee829cec l=[::1]:3000 r=80.178.194.151:58635
+t=2026-07-14T19:07:40+0300 lvl=info msg="join connections" obj=join id=2facb0b64773 l=[::1]:3000 r=80.178.194.151:34606
+t=2026-07-14T19:07:40+0300 lvl=info msg="join connections" obj=join id=f086bf03d6ca l=[::1]:3000 r=80.178.194.151:34606
+t=2026-07-14T19:08:14+0300 lvl=info msg="join connections" obj=join id=c44ed05b678f l=[::1]:3000 r=80.178.118.33:48170
+t=2026-07-14T19:08:14+0300 lvl=info msg="join connections" obj=join id=1c01fc00a451 l=[::1]:3000 r=80.178.118.33:48170

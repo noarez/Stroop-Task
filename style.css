@@ -294,6 +294,52 @@ p {
   margin-top: 8px;
 }
 
+/* ── Radio Button Groups (Demographics) ── */
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-radio {
+  flex: 1;
+  min-width: 80px;
+  cursor: pointer;
+}
+
+.btn-radio input[type="radio"] {
+  display: none;
+}
+
+.btn-radio span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-dim);
+  transition: all 0.2s ease;
+  text-align: center;
+  height: 100%;
+  font-size: 0.95rem;
+}
+
+.btn-radio input[type="radio"]:checked + span {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.btn-radio span:hover {
+  background: rgba(255,255,255,0.05);
+}
+.btn-radio input[type="radio"]:checked + span:hover {
+  background: var(--accent);
+}
+
 /* ── kbd ── */
 kbd {
   display: inline-flex;

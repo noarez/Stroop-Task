@@ -41,11 +41,7 @@ const STATE = {
   education_years: null,
   mother_tongue: null,
   has_add_lang: null,
-  add_lang_count: null,
-  add_lang_name: null,
-  add_lang_age: null,
-  add_lang_prof: null,
-  add_lang_freq: null,
+  additional_languages_data: null,
   trials: [],          // all recorded trial objects
   currentBlock: null,  // 'practice' | 'main'
   trialQueue: [],      // ordered list of trial specs to run
@@ -216,27 +212,76 @@ function toggleGenderOther() {
 function toggleAddLang() {
   const hasLang = document.querySelector('input[name="demo-has-add-lang"]:checked')?.value;
   const wrap = document.getElementById('demo-add-lang-wrap');
-  const count = document.getElementById('demo-add-lang-count');
-  const name = document.getElementById('demo-add-lang-name');
-  const age = document.getElementById('demo-add-lang-age');
-  const prof = document.getElementById('demo-add-lang-prof');
-  const freq = document.getElementById('demo-add-lang-freq');
+  const container = document.getElementById('languages-container');
   
   if (hasLang === 'כן') {
-    wrap.style.display = 'block';
-    count.required = true;
-    name.required = true;
-    age.required = true;
-    prof.required = true;
-    freq.required = true;
+    wrap.style.display = 'flex';
+    if (container.children.length === 0) {
+      addLanguageBlock();
+    }
   } else {
     wrap.style.display = 'none';
-    count.required = false;
-    name.required = false;
-    age.required = false;
-    prof.required = false;
-    freq.required = false;
   }
+}
+
+let langBlockCounter = 0;
+function addLanguageBlock() {
+  langBlockCounter++;
+  const container = document.getElementById('languages-container');
+  const div = document.createElement('div');
+  div.className = 'lang-block';
+  div.style.cssText = 'background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; position: relative; display: flex; flex-direction: column;';
+  
+  div.innerHTML = `
+    <h4 style="margin-top: 0; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+      שפה #${langBlockCounter}
+      ${langBlockCounter > 1 ? `<button type="button" style="background: transparent; border: none; color: #ff5252; cursor: pointer; font-weight: bold; padding: 4px;" onclick="this.closest('.lang-block').remove()">הסר ✕</button>` : ''}
+    </h4>
+    
+    <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+      <label style="font-weight: bold; margin-bottom: 4px;">מהי השפה?</label>
+      <input type="text" class="lang-name" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+    </div>
+
+    <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+      <label style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <span>באיזה גיל התחלת לדבר את השפה?</span>
+        <span id="lang-age-val-${langBlockCounter}" style="color: var(--accent); font-size: 1.3rem; font-weight: 800; background: rgba(0,0,0,0.2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">10</span>
+      </label>
+      <input type="range" class="lang-age styled-slider" min="0" max="100" value="10" oninput="document.getElementById('lang-age-val-${langBlockCounter}').textContent = this.value">
+    </div>
+
+    <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+      <label style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <span>רמת שליטה (1-10):</span>
+        <span id="lang-prof-val-${langBlockCounter}" style="color: var(--accent); font-size: 1.3rem; font-weight: 800; background: rgba(0,0,0,0.2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">5</span>
+      </label>
+      <input type="range" class="lang-prof styled-slider" min="1" max="10" value="5" oninput="document.getElementById('lang-prof-val-${langBlockCounter}').textContent = this.value">
+    </div>
+
+    <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+      <label style="font-weight: bold; margin-bottom: 4px;">באיזו תדירות אתה משתמש בשפה זו ביומיום?</label>
+      <div class="button-group">
+        <label class="btn-radio">
+          <input type="radio" name="lang-freq-${langBlockCounter}" value="בכלל לא" required>
+          <span>בכלל לא</span>
+        </label>
+        <label class="btn-radio">
+          <input type="radio" name="lang-freq-${langBlockCounter}" value="לעתים רחוקות" required>
+          <span>לעתים רחוקות</span>
+        </label>
+        <label class="btn-radio">
+          <input type="radio" name="lang-freq-${langBlockCounter}" value="מספר פעמים בשבוע" required>
+          <span>פעמים בשבוע</span>
+        </label>
+        <label class="btn-radio">
+          <input type="radio" name="lang-freq-${langBlockCounter}" value="בכל יום" required>
+          <span>בכל יום</span>
+        </label>
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
 }
 
 function submitDemographics(event) {
@@ -250,17 +295,19 @@ function submitDemographics(event) {
   STATE.has_add_lang = document.querySelector('input[name="demo-has-add-lang"]:checked')?.value;
   
   if (STATE.has_add_lang === 'כן') {
-    STATE.add_lang_count = parseInt(document.getElementById('demo-add-lang-count').value, 10);
-    STATE.add_lang_name = document.getElementById('demo-add-lang-name').value;
-    STATE.add_lang_age = parseInt(document.getElementById('demo-add-lang-age').value, 10);
-    STATE.add_lang_prof = parseInt(document.getElementById('demo-add-lang-prof').value, 10);
-    STATE.add_lang_freq = document.querySelector('input[name="demo-add-lang-freq"]:checked')?.value;
+    const blocks = document.querySelectorAll('.lang-block');
+    const langs = [];
+    blocks.forEach(b => {
+      const name = b.querySelector('.lang-name').value;
+      const age = b.querySelector('.lang-age').value;
+      const prof = b.querySelector('.lang-prof').value;
+      const freqInput = b.querySelector(`input[type="radio"]:checked`);
+      const freq = freqInput ? freqInput.value : '';
+      if (name.trim()) langs.push(`${name} (Age:${age}, Prof:${prof}, Freq:${freq})`);
+    });
+    STATE.additional_languages_data = langs.join(' | ');
   } else {
-    STATE.add_lang_count = null;
-    STATE.add_lang_name = null;
-    STATE.add_lang_age = null;
-    STATE.add_lang_prof = null;
-    STATE.add_lang_freq = null;
+    STATE.additional_languages_data = null;
   }
   
   showScreen('screen-onboarding');
@@ -374,11 +421,7 @@ function handleResponse(respondedColorName) {
     education_years:      STATE.education_years,
     mother_tongue:        STATE.mother_tongue,
     has_add_lang:         STATE.has_add_lang,
-    add_lang_count:       STATE.add_lang_count,
-    add_lang_name:        STATE.add_lang_name,
-    add_lang_age:         STATE.add_lang_age,
-    add_lang_prof:        STATE.add_lang_prof,
-    add_lang_freq:        STATE.add_lang_freq,
+    additional_languages_data: STATE.additional_languages_data,
     is_practice:          trial.isPractice,
     trial_number:         STATE.trials.length + 1,
     block_trial_number:   STATE.currentTrialIndex + 1,
@@ -437,11 +480,7 @@ function handleTimeout() {
     education_years:      STATE.education_years,
     mother_tongue:        STATE.mother_tongue,
     has_add_lang:         STATE.has_add_lang,
-    add_lang_count:       STATE.add_lang_count,
-    add_lang_name:        STATE.add_lang_name,
-    add_lang_age:         STATE.add_lang_age,
-    add_lang_prof:        STATE.add_lang_prof,
-    add_lang_freq:        STATE.add_lang_freq,
+    additional_languages_data: STATE.additional_languages_data,
     is_practice:          trial.isPractice,
     trial_number:         STATE.trials.length + 1,
     block_trial_number:   STATE.currentTrialIndex + 1,

@@ -84,7 +84,8 @@ function shuffle(arr) {
  * @param {boolean} isPractice
  */
 function generateTrials(n, isPractice) {
-  const congruentPerColor = Math.floor(n / (COLORS.length * 2));
+  // Use Math.ceil so we always generate AT LEAST `n` trials even if n is not divisible by 8
+  const congruentPerColor = Math.ceil(n / (COLORS.length * 2)) || 1;
   const incongruentPerColor = congruentPerColor;
   const list = [];
 
@@ -114,7 +115,8 @@ function generateTrials(n, isPractice) {
     }
   });
 
-  return shuffle(list);
+  // Shuffle and slice to exactly `n`
+  return shuffle(list).slice(0, n);
 }
 
 // ══════════════════════════════════════════

@@ -44,21 +44,77 @@
 
         <form id="demographics-form" onsubmit="submitDemographics(event)">
           <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label for="demo-age" style="font-weight: bold; margin-bottom: 4px;">גיל:</label>
+            <label for="demo-age" style="font-weight: bold; margin-bottom: 4px;">גיל (ציין/י בשנים):</label>
             <input type="number" id="demo-age" required min="1" max="120" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
           </div>
           
-          <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
             <label for="demo-gender" style="font-weight: bold; margin-bottom: 4px;">מגדר:</label>
-            <select id="demo-gender" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+            <select id="demo-gender" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);" onchange="toggleGenderOther()">
               <option value="" disabled selected>בחר/י...</option>
               <option value="זכר">זכר</option>
               <option value="נקבה">נקבה</option>
               <option value="אחר">אחר</option>
             </select>
           </div>
+          <div id="demo-gender-other-wrap" style="margin-bottom: 12px; display: none; flex-direction: column;">
+            <label for="demo-gender-other" style="font-weight: bold; margin-bottom: 4px;">פרט/י מגדר:</label>
+            <input type="text" id="demo-gender-other" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+          </div>
 
-          <button type="submit" class="btn btn-primary">
+          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+            <label for="demo-education" style="font-weight: bold; margin-bottom: 4px;">שנות לימוד:</label>
+            <input type="number" id="demo-education" required min="0" max="40" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+          </div>
+
+          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+            <label for="demo-mother-tongue" style="font-weight: bold; margin-bottom: 4px;">מהי שפת האם שלך?</label>
+            <input type="text" id="demo-mother-tongue" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+          </div>
+
+          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+            <label for="demo-has-add-lang" style="font-weight: bold; margin-bottom: 4px;">האם אתה דובר שפות נוספות?</label>
+            <select id="demo-has-add-lang" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);" onchange="toggleAddLang()">
+              <option value="" disabled selected>בחר/י...</option>
+              <option value="כן">כן</option>
+              <option value="לא">לא</option>
+            </select>
+          </div>
+
+          <div id="demo-add-lang-wrap" style="display: none; background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+              <label for="demo-add-lang-count" style="font-weight: bold; margin-bottom: 4px;">כמה שפות נוספות אתה דובר?</label>
+              <input type="number" id="demo-add-lang-count" min="1" max="10" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+            </div>
+            
+            <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+              <label for="demo-add-lang-name" style="font-weight: bold; margin-bottom: 4px;">מהי השפה הנוספת? (שפה עיקרית נוספת)</label>
+              <input type="text" id="demo-add-lang-name" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+            </div>
+
+            <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+              <label for="demo-add-lang-age" style="font-weight: bold; margin-bottom: 4px;">באיזה גיל התחלת לדבר את השפה?</label>
+              <input type="number" id="demo-add-lang-age" min="0" max="120" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+            </div>
+
+            <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+              <label for="demo-add-lang-prof" style="font-weight: bold; margin-bottom: 4px;">מהי רמת השליטה שלך בשפה זו? (קריאה, כתיבה ודיבור) – 1 עד 10</label>
+              <input type="number" id="demo-add-lang-prof" min="1" max="10" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+            </div>
+
+            <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+              <label for="demo-add-lang-freq" style="font-weight: bold; margin-bottom: 4px;">באיזו תדירות אתה משתמש בשפה זו ביומיום?</label>
+              <select id="demo-add-lang-freq" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+                <option value="" disabled selected>בחר/י...</option>
+                <option value="בכלל לא">בכלל לא</option>
+                <option value="לעתים רחוקות">לעתים רחוקות</option>
+                <option value="מספר פעמים בשבוע">מספר פעמים בשבוע</option>
+                <option value="בכל יום">בכל יום</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: 12px;">
             המשך
             <span class="btn-arrow">←</span>
           </button>

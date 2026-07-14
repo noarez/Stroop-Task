@@ -37,6 +37,15 @@ const STATE = {
   participantId: generateSessionId(),
   age: null,
   gender: null,
+  gender_other: null,
+  education_years: null,
+  mother_tongue: null,
+  has_add_lang: null,
+  add_lang_count: null,
+  add_lang_name: null,
+  add_lang_age: null,
+  add_lang_prof: null,
+  add_lang_freq: null,
   trials: [],          // all recorded trial objects
   currentBlock: null,  // 'practice' | 'main'
   trialQueue: [],      // ordered list of trial specs to run
@@ -189,16 +198,70 @@ const DOM = {
 //  BLOCK RUNNERS
 // ══════════════════════════════════════════
 
+function toggleGenderOther() {
+  const gender = document.getElementById('demo-gender').value;
+  const wrap = document.getElementById('demo-gender-other-wrap');
+  const input = document.getElementById('demo-gender-other');
+  if (gender === 'אחר') {
+    wrap.style.display = 'flex';
+    input.required = true;
+  } else {
+    wrap.style.display = 'none';
+    input.required = false;
+  }
+}
+
+function toggleAddLang() {
+  const hasLang = document.getElementById('demo-has-add-lang').value;
+  const wrap = document.getElementById('demo-add-lang-wrap');
+  const count = document.getElementById('demo-add-lang-count');
+  const name = document.getElementById('demo-add-lang-name');
+  const age = document.getElementById('demo-add-lang-age');
+  const prof = document.getElementById('demo-add-lang-prof');
+  const freq = document.getElementById('demo-add-lang-freq');
+  
+  if (hasLang === 'כן') {
+    wrap.style.display = 'block';
+    count.required = true;
+    name.required = true;
+    age.required = true;
+    prof.required = true;
+    freq.required = true;
+  } else {
+    wrap.style.display = 'none';
+    count.required = false;
+    name.required = false;
+    age.required = false;
+    prof.required = false;
+    freq.required = false;
+  }
+}
+
 function submitDemographics(event) {
   event.preventDefault();
-  const age = document.getElementById('demo-age').value;
-  const gender = document.getElementById('demo-gender').value;
   
-  if (age && gender) {
-    STATE.age = parseInt(age, 10);
-    STATE.gender = gender;
-    showScreen('screen-onboarding');
+  STATE.age = parseInt(document.getElementById('demo-age').value, 10);
+  STATE.gender = document.getElementById('demo-gender').value;
+  STATE.gender_other = document.getElementById('demo-gender-other').value || null;
+  STATE.education_years = parseInt(document.getElementById('demo-education').value, 10);
+  STATE.mother_tongue = document.getElementById('demo-mother-tongue').value;
+  STATE.has_add_lang = document.getElementById('demo-has-add-lang').value;
+  
+  if (STATE.has_add_lang === 'כן') {
+    STATE.add_lang_count = parseInt(document.getElementById('demo-add-lang-count').value, 10);
+    STATE.add_lang_name = document.getElementById('demo-add-lang-name').value;
+    STATE.add_lang_age = parseInt(document.getElementById('demo-add-lang-age').value, 10);
+    STATE.add_lang_prof = parseInt(document.getElementById('demo-add-lang-prof').value, 10);
+    STATE.add_lang_freq = document.getElementById('demo-add-lang-freq').value;
+  } else {
+    STATE.add_lang_count = null;
+    STATE.add_lang_name = null;
+    STATE.add_lang_age = null;
+    STATE.add_lang_prof = null;
+    STATE.add_lang_freq = null;
   }
+  
+  showScreen('screen-onboarding');
 }
 
 function startPractice() {
@@ -305,6 +368,15 @@ function handleResponse(respondedColorName) {
     participant_id:       STATE.participantId,
     age:                  STATE.age,
     gender:               STATE.gender,
+    gender_other:         STATE.gender_other,
+    education_years:      STATE.education_years,
+    mother_tongue:        STATE.mother_tongue,
+    has_add_lang:         STATE.has_add_lang,
+    add_lang_count:       STATE.add_lang_count,
+    add_lang_name:        STATE.add_lang_name,
+    add_lang_age:         STATE.add_lang_age,
+    add_lang_prof:        STATE.add_lang_prof,
+    add_lang_freq:        STATE.add_lang_freq,
     is_practice:          trial.isPractice,
     trial_number:         STATE.trials.length + 1,
     block_trial_number:   STATE.currentTrialIndex + 1,
@@ -359,6 +431,15 @@ function handleTimeout() {
     participant_id:       STATE.participantId,
     age:                  STATE.age,
     gender:               STATE.gender,
+    gender_other:         STATE.gender_other,
+    education_years:      STATE.education_years,
+    mother_tongue:        STATE.mother_tongue,
+    has_add_lang:         STATE.has_add_lang,
+    add_lang_count:       STATE.add_lang_count,
+    add_lang_name:        STATE.add_lang_name,
+    add_lang_age:         STATE.add_lang_age,
+    add_lang_prof:        STATE.add_lang_prof,
+    add_lang_freq:        STATE.add_lang_freq,
     is_practice:          trial.isPractice,
     trial_number:         STATE.trials.length + 1,
     block_trial_number:   STATE.currentTrialIndex + 1,

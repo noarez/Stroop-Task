@@ -245,7 +245,7 @@ function submitDemographics(event) {
   STATE.age = parseInt(document.getElementById('demo-age').value, 10);
   STATE.gender = document.querySelector('input[name="demo-gender"]:checked')?.value;
   STATE.gender_other = document.getElementById('demo-gender-other').value || null;
-  STATE.education_years = parseInt(document.getElementById('demo-education').value, 10);
+  STATE.education_years = document.getElementById('demo-education').value;
   STATE.mother_tongue = document.getElementById('demo-mother-tongue').value;
   STATE.has_add_lang = document.querySelector('input[name="demo-has-add-lang"]:checked')?.value;
   

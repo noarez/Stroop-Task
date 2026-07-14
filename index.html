@@ -74,11 +74,16 @@
           </div>
 
           <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
-            <label for="demo-education" style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-              <span>שנות לימוד:</span>
-              <span id="demo-education-val" style="color: var(--accent); font-size: 1.4rem; font-weight: 800; background: var(--bg-card2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">12</span>
-            </label>
-            <input type="range" id="demo-education" required min="0" max="30" value="12" class="styled-slider" oninput="document.getElementById('demo-education-val').textContent = this.value">
+            <label for="demo-education" style="font-weight: bold; margin-bottom: 8px;">השכלה:</label>
+            <select id="demo-education" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+              <option value="" disabled selected>בחר/י...</option>
+              <option value="השכלה יסודית / חלקית">השכלה יסודית / חלקית</option>
+              <option value="השכלה תיכונית ללא תעודת בגרות">השכלה תיכונית ללא תעודת בגרות</option>
+              <option value="השכלה תיכונית עם תעודת בגרות מלאה">השכלה תיכונית עם תעודת בגרות מלאה</option>
+              <option value="השכלה על-תיכונית">השכלה על-תיכונית</option>
+              <option value="תואר אקדמי ראשון">תואר אקדמי ראשון</option>
+              <option value="תואר אקדמי שני ומעלה">תואר אקדמי שני ומעלה</option>
+            </select>
           </div>
 
           <div style="margin-bottom: 12px; display: flex; flex-direction: column;">

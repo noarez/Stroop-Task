@@ -1,0 +1,657 @@
+/* ─────────────────────────────────────────
+   STROOP TASK — STYLE SHEET
+   Dark, clean, distraction-free research UI
+───────────────────────────────────────── */
+
+/* ── Tokens ── */
+:root {
+  --bg:        #111318;
+  --bg-card:   #1a1d26;
+  --bg-card2:  #20232f;
+  --border:    rgba(255,255,255,0.07);
+  --text:      #e8eaf0;
+  --text-dim:  #8b8fa8;
+  --accent:    #6b8aff;
+  --accent-glow: rgba(107,138,255,0.25);
+
+  --red:    #e05252;
+  --blue:   #5272e0;
+  --green:  #52b46b;
+  --yellow: #c9b020;
+
+  --correct:   #52b46b;
+  --incorrect: #e05252;
+
+  --radius:   16px;
+  --radius-sm: 8px;
+  --shadow:   0 24px 64px rgba(0,0,0,0.6);
+  --font:     'Heebo', 'Arial Hebrew', Arial, sans-serif;
+  --transition: 0.22s ease;
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Screens ── */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.screen.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Card ── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 44px 48px;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: var(--shadow);
+  animation: cardIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.wide-card {
+  max-width: 680px;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Logo Badge ── */
+.logo-badge {
+  font-size: 44px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+/* ── Typography ── */
+h1 {
+  font-size: 2.1rem;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+p {
+  line-height: 1.75;
+  color: var(--text-dim);
+  font-size: 0.98rem;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 28px 0;
+}
+
+/* ── Instructions ── */
+.instructions-block {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Color Response Buttons ── */
+
+/* Shared 2×2 grid layout */
+.color-btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Preview grid on onboarding (non-interactive, smaller) */
+.preview-grid {
+  max-width: 340px;
+  margin: 0 auto;
+  gap: 10px;
+}
+
+/* Individual color button */
+.color-btn {
+  font-family: var(--font);
+  font-size: 1.2rem;
+  font-weight: 800;
+  padding: 18px 12px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--bg-card2);
+  cursor: pointer;
+  transition: transform 0.13s ease, box-shadow 0.13s ease, background 0.13s ease, border-color 0.13s ease;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Per-color theming via data-color attribute */
+.color-btn[data-color="אדום"] { color: var(--red);    border-color: rgba(224,82,82,0.2);  }
+.color-btn[data-color="כחול"] { color: var(--blue);   border-color: rgba(82,114,224,0.2); }
+.color-btn[data-color="ירוק"] { color: var(--green);  border-color: rgba(82,180,107,0.2); }
+.color-btn[data-color="צהוב"] { color: var(--yellow); border-color: rgba(201,176,32,0.2); }
+
+/* Hover states — tint only, no glow, no lift */
+.color-btn[data-color="אדום"]:hover { background: rgba(224,82,82,0.09);  border-color: rgba(224,82,82,0.45);  }
+.color-btn[data-color="כחול"]:hover { background: rgba(82,114,224,0.09); border-color: rgba(82,114,224,0.45); }
+.color-btn[data-color="ירוק"]:hover { background: rgba(82,180,107,0.09); border-color: rgba(82,180,107,0.45); }
+.color-btn[data-color="צהוב"]:hover { background: rgba(201,176,32,0.09); border-color: rgba(201,176,32,0.45); }
+
+/* Press state */
+.color-btn:active { transform: translateY(1px) scale(0.97); box-shadow: none; }
+
+/* Disabled (preview) */
+.color-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: none;
+  font-size: 1rem;
+  padding: 12px 8px;
+}
+
+/* When response is blocked (between trials) the grid itself gets dimmed */
+.color-btn-grid.locked .color-btn {
+  pointer-events: none;
+  opacity: 0.35;
+  transition: opacity 0.15s;
+}
+
+/* ── Info Box ── */
+.info-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.info-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ── Flow Note ── */
+.flow-note {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-family: var(--font);
+  font-size: 1.05rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.2px;
+  width: 100%;
+}
+
+.btn-primary {
+  background: #3a4a7a;
+  color: #e8eaf0;
+  box-shadow: none;
+}
+
+.btn-primary:hover {
+  background: #4a5a8a;
+}
+
+.btn-primary:active {
+  background: #2e3a60;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card2);
+  color: var(--text);
+}
+
+.btn-arrow { font-size: 1rem; }
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ── kbd ── */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  background: var(--bg-card2);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-bottom: 3px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* ══════════════════════════════════════════
+   TRIAL SCREEN
+══════════════════════════════════════════ */
+
+#screen-trial {
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Header ── */
+.trial-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 28px 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(to bottom, rgba(17,19,24,0.95) 70%, transparent);
+  z-index: 10;
+}
+
+.phase-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.trial-counter {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.progress-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: rgba(255,255,255,0.25);
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* ── Fixation ── */
+.fixation {
+  font-size: 3.2rem;          /* slightly reduced to match new stimulus scale */
+  font-weight: 300;
+  color: var(--text-dim);
+  animation: fadeInScale 0.12s ease;
+  letter-spacing: 0;
+  margin-bottom: clamp(160px, 28vh, 240px); /* mirrors stimulus offset */
+}
+
+/* ── Stimulus ── */
+.stimulus {
+  /* 30% smaller than original clamp(4rem,10vw,7rem) */
+  font-size: clamp(2.8rem, 7vw, 4.9rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  animation: stimulusIn 0.12s ease both;
+  line-height: 1;
+  /* Push word above centre so it clears the fixed button grid */
+  margin-bottom: clamp(160px, 28vh, 240px);
+}
+
+@keyframes stimulusIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Feedback ── */
+.feedback {
+  position: fixed;
+  bottom: 220px;   /* cleared above the 2×2 button grid */
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+  font-weight: 800;
+  padding: 10px 28px;
+  border-radius: 50px;
+  animation: feedbackPop 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+  white-space: nowrap;
+  z-index: 20;
+}
+
+.feedback.correct {
+  color: var(--correct);
+  background: rgba(82,180,107,0.12);
+  border: 1px solid rgba(82,180,107,0.3);
+}
+
+.feedback.incorrect {
+  color: var(--incorrect);
+  background: rgba(224,82,82,0.12);
+  border: 1px solid rgba(224,82,82,0.3);
+}
+
+.feedback.timeout {
+  color: #000000;
+  background: rgba(255,255,0,0.8);
+  border: 1px solid rgba(255,255,0,1);
+}
+
+@keyframes feedbackPop {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Response Grid (in-trial, fixed to bottom) ── */
+.response-grid {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(480px, calc(100vw - 32px));
+  padding: 20px 16px 28px;
+  background: linear-gradient(to top, rgba(17,19,24,1) 60%, transparent);
+  z-index: 15;
+}
+
+/* ── Completion Stats ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ── Session ID note ── */
+.session-id-note {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(139,143,168,0.5);
+  margin-top: 16px;
+  font-family: 'Courier New', monospace;
+  direction: ltr;
+}
+
+/* ── Countdown bar (response timeout indicator) ── */
+.countdown-bar-wrap {
+  position: fixed;
+  bottom: 185px;          /* sits just above the button grid */
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(480px, calc(100vw - 32px));
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+  z-index: 14;
+}
+
+.countdown-bar {
+  height: 100%;
+  width: 100%;
+  background: rgba(255,255,255,0.22);
+  border-radius: 99px;
+  transform-origin: right center;  /* RTL: shrinks from left */
+  animation: countdownShrink 3s linear forwards;
+  animation-play-state: paused;
+}
+
+.countdown-bar.running {
+  animation-play-state: running;
+}
+
+@keyframes countdownShrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* Tighter on mobile */
+@media (max-width: 480px) {
+  .countdown-bar-wrap { bottom: 160px; width: 100vw; }
+}
+@media (max-height: 700px) {
+  .countdown-bar-wrap { bottom: 148px; }
+}
+
+/* ── Utilities ── */
+.hidden { display: none !important; }
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ──────────────────────────────────
+   RESPONSIVE — TABLET (max 768px)
+────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Onboarding card scrollable */
+  #screen-onboarding {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .card, .wide-card {
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 32px 24px;
+  }
+  /* Instructions block less padded */
+  .instructions-block {
+    padding: 18px 20px;
+    gap: 14px;
+  }
+  /* Preview grid fills width better */
+  .preview-grid {
+    max-width: 100%;
+  }
+  /* Response grid wider */
+  .response-grid {
+    width: calc(100vw - 24px);
+  }
+}
+
+/* ──────────────────────────────────
+   RESPONSIVE — MOBILE (max 480px)
+────────────────────────────────── */
+@media (max-width: 480px) {
+  /* ── Typography ── */
+  h1 { font-size: 1.55rem; }
+  h2 { font-size: 1rem; }
+  p, .info-box { font-size: 0.88rem; }
+
+  /* ── Cards ── */
+  .card, .wide-card {
+    padding: 24px 16px;
+    border-radius: 12px;
+  }
+  .logo-badge { font-size: 38px; margin-bottom: 10px; }
+  .divider { margin: 18px 0; }
+
+  /* ── Instructions ── */
+  .instructions-block { padding: 14px 16px; gap: 12px; }
+  .preview-grid { gap: 8px; }
+  .color-btn:disabled { padding: 10px 6px; font-size: 0.9rem; }
+
+  /* ── Main CTA button ── */
+  .btn { padding: 14px 20px; font-size: 1rem; }
+
+  /* ── Trial header ── */
+  .trial-header {
+    padding: 10px 14px 8px;
+    gap: 10px;
+  }
+  .phase-label { font-size: 0.7rem; padding: 3px 10px; }
+  .trial-counter { font-size: 0.78rem; }
+
+  /* ── Stimulus ── */
+  .stimulus {
+    font-size: clamp(2.4rem, 11vw, 3.6rem);
+    margin-bottom: clamp(140px, 30vh, 200px);
+  }
+  .fixation {
+    font-size: 2.6rem;
+    margin-bottom: clamp(140px, 30vh, 200px);
+  }
+
+  /* ── Feedback ── */
+  .feedback {
+    bottom: 200px;
+    font-size: 1.2rem;
+    padding: 8px 20px;
+  }
+
+  /* ── Response buttons ── */
+  .response-grid {
+    width: 100vw;
+    padding: 14px 12px 20px;
+  }
+  .color-btn-grid {
+    gap: 8px;
+  }
+  .color-btn {
+    font-size: 1.05rem;
+    padding: 16px 8px;   /* generous touch target (min ~52px) */
+    border-radius: 11px;
+  }
+
+  /* ── Completion screen ── */
+  .session-id-note { font-size: 0.68rem; }
+}
+
+/* ──────────────────────────────────
+   RESPONSIVE — SHORT SCREENS (max-height 700px)
+   Handles landscape phone and small laptops
+────────────────────────────────── */
+@media (max-height: 700px) {
+  /* Non-trial screens become scrollable */
+  #screen-onboarding,
+  #screen-transition,
+  #screen-complete {
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+  .card, .wide-card { margin: 28px auto; }
+
+  /* Reduce stimulus offset on short screens */
+  .stimulus, .fixation {
+    margin-bottom: clamp(120px, 22vh, 170px);
+  }
+
+  /* Compact response grid */
+  .response-grid { padding: 12px 16px 16px; }
+  .color-btn { padding: 12px 8px; }
+  .feedback { bottom: 170px; }
+}
+
+/* Very short landscape (e.g. iPhone SE landscape) */
+@media (max-height: 480px) {
+  .stimulus { font-size: clamp(2rem, 9vw, 3rem); }
+  .fixation { font-size: 2.2rem; }
+  .stimulus, .fixation { margin-bottom: 120px; }
+  .color-btn { padding: 10px 6px; font-size: 0.9rem; }
+  .response-grid { padding: 8px 12px 12px; }
+  .feedback { bottom: 140px; font-size: 1.1rem; }
+  .trial-header { padding: 8px 14px 6px; }
+}

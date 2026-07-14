@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#111318" />
+  <title>מטלת סטרופ | Stroop Task</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════ SCREEN 0: DEMOGRAPHICS ══════════════════════ -->
+  <div id="screen-demographics" class="screen active">
+    <div class="card wide-card">
+      <div class="logo-badge">🔬</div>
+      <h1>ברוכים הבאים למחקר</h1>
+      <p class="subtitle">הסבר קצר על המחקר</p>
+      <div class="divider"></div>
+      
+      <div class="instructions-block">
+        <p>
+          אנו מודים לכם על ההסכמה להשתתף במחקר זה. מטרת המחקר היא לבדוק תהליכים קוגניטיביים של קשב וזמן תגובה.
+          המידע שייאסף במחקר ישמש למטרות אקדמיות בלבד, יישמר באופן אנונימי וללא פרטים מזהים, 
+          ויישמר בצורה מאובטחת.
+        </p>
+        <p>
+          כדי להמשיך, אנא מלאו את הפרטים הבאים:
+        </p>
+
+        <form id="demographics-form" onsubmit="submitDemographics(event)">
+          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
+            <label for="demo-age" style="font-weight: bold; margin-bottom: 4px;">גיל:</label>
+            <input type="number" id="demo-age" required min="1" max="120" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+          </div>
+          
+          <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+            <label for="demo-gender" style="font-weight: bold; margin-bottom: 4px;">מגדר:</label>
+            <select id="demo-gender" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+              <option value="" disabled selected>בחר/י...</option>
+              <option value="זכר">זכר</option>
+              <option value="נקבה">נקבה</option>
+              <option value="אחר">אחר</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            המשך
+            <span class="btn-arrow">←</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SCREEN 1: ONBOARDING ══════════════════════ -->
+  <div id="screen-onboarding" class="screen">
+    <div class="card wide-card">
+      <div class="logo-badge">🧠</div>
+      <h1>מטלת סטרופ</h1>
+      <p class="subtitle">מחקר תהליכים קוגניטיביים</p>
+      <div class="divider"></div>
+
+      <div class="instructions-block">
+        <h2>הוראות</h2>
+        <p>
+          בכל ניסיון תוצג בפניך <strong>מילה</strong> הכתובה בצבע מסוים.
+          עליך להגיב לפי <strong>צבע הדיו</strong> של המילה — ולא למשמעות המילה עצמה.
+        </p>
+
+        <!-- 2×2 color-button preview (non-interactive) -->
+        <div class="color-btn-grid preview-grid">
+          <button class="color-btn" data-color="ירוק" tabindex="-1" disabled>ירוק</button>
+          <button class="color-btn" data-color="אדום" tabindex="-1" disabled>אדום</button>
+          <button class="color-btn" data-color="צהוב" tabindex="-1" disabled>צהוב</button>
+          <button class="color-btn" data-color="כחול" tabindex="-1" disabled>כחול</button>
+        </div>
+
+        <div class="info-box">
+          <span class="info-icon">💡</span>
+          <div>
+            <strong>דוגמה:</strong> אם המילה "כחול" כתובה <em>באדום</em> — לחץ על הכפתור <strong style="color:#e05252">אדום</strong>, כי צבע הדיו הוא אדום.
+          </div>
+        </div>
+
+        <p class="flow-note">
+          ראשית תעבור <strong>שלב תרגול קצר</strong> עם משוב מיידי.
+          לאחר מכן תתחיל את <strong>המטלה האמיתית</strong> ללא משוב.
+        </p>
+      </div>
+
+      <button id="btn-start-practice" class="btn btn-primary" onclick="startPractice()">
+        התחלת תרגול
+        <span class="btn-arrow">←</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SCREEN 2: TRIAL (practice & main) ══════════════════════ -->
+  <div id="screen-trial" class="screen">
+    <div class="trial-header">
+      <div id="trial-phase-label" class="phase-label">תרגול</div>
+      <div id="trial-counter" class="trial-counter">ניסיון 1</div>
+      <div id="trial-progress-bar-wrap" class="progress-bar-wrap">
+        <div id="trial-progress-bar" class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- fixation cross -->
+    <div id="fixation" class="fixation hidden">+</div>
+
+    <!-- stimulus -->
+    <div id="stimulus" class="stimulus hidden"></div>
+
+    <!-- feedback (practice only) -->
+    <div id="feedback" class="feedback hidden"></div>
+
+    <!-- countdown bar — shrinks left-to-right over RESPONSE_TIMEOUT_MS -->
+    <div id="countdown-bar-wrap" class="countdown-bar-wrap hidden">
+      <div id="countdown-bar" class="countdown-bar"></div>
+    </div>
+
+    <!-- 2×2 clickable color-response buttons -->
+    <div class="color-btn-grid response-grid" id="response-buttons">
+      <button class="color-btn" id="btn-color-ירוק" data-color="ירוק">ירוק</button>
+      <button class="color-btn" id="btn-color-אדום" data-color="אדום">אדום</button>
+      <button class="color-btn" id="btn-color-צהוב" data-color="צהוב">צהוב</button>
+      <button class="color-btn" id="btn-color-כחול" data-color="כחול">כחול</button>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════ SCREEN 3: TRANSITION ══════════════════════ -->
+  <div id="screen-transition" class="screen">
+    <div class="card">
+      <div class="logo-badge">✅</div>
+      <h1>כל הכבוד!</h1>
+      <p class="subtitle">שלב התרגול הסתיים</p>
+      <div class="divider"></div>
+      <div class="info-box">
+        <span class="info-icon">ℹ️</span>
+        <div>
+          כעת תתחיל המטלה האמיתית. <strong>לא תקבל/י משוב</strong> לאחר כל תשובה.
+          נסה/י להגיב במהירות ובדיוק רב ככל האפשר.
+        </div>
+      </div>
+      <button id="btn-start-main" class="btn btn-primary" onclick="startMain()">
+        התחלת המטלה
+        <span class="btn-arrow">←</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SCREEN 4: COMPLETION ══════════════════════ -->
+  <div id="screen-complete" class="screen">
+    <div class="card">
+      <div class="logo-badge">🎉</div>
+      <h1>תודה רבה!</h1>
+      <p class="subtitle">השתתפותך חשובה לנו — המטלה הסתיימה בהצלחה</p>
+      <div class="divider"></div>
+
+      <div class="info-box" id="data-status-box">
+        <span class="info-icon" id="data-status-icon">⏳</span>
+        <div id="data-status-msg">שומר נתונים...</div>
+      </div>
+
+      <p class="session-id-note">מזהה סשן: <span id="session-id-display"></span></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -43,9 +43,12 @@
         </p>
 
         <form id="demographics-form" onsubmit="submitDemographics(event)">
-          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label for="demo-age" style="font-weight: bold; margin-bottom: 4px;">גיל (ציין/י בשנים):</label>
-            <input type="number" inputmode="numeric" pattern="[0-9]*" id="demo-age" required min="1" max="120" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+          <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+            <label for="demo-age" style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span>גיל:</span>
+              <span id="demo-age-val" style="color: var(--accent); font-size: 1.4rem; font-weight: 800; background: var(--bg-card2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">25</span>
+            </label>
+            <input type="range" id="demo-age" required min="10" max="100" value="25" class="styled-slider" oninput="document.getElementById('demo-age-val').textContent = this.value">
           </div>
           
           <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
@@ -70,9 +73,12 @@
             <input type="text" id="demo-gender-other" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
           </div>
 
-          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label for="demo-education" style="font-weight: bold; margin-bottom: 4px;">שנות לימוד:</label>
-            <input type="number" inputmode="numeric" pattern="[0-9]*" id="demo-education" required min="0" max="40" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+          <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+            <label for="demo-education" style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span>שנות לימוד:</span>
+              <span id="demo-education-val" style="color: var(--accent); font-size: 1.4rem; font-weight: 800; background: var(--bg-card2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">12</span>
+            </label>
+            <input type="range" id="demo-education" required min="0" max="30" value="12" class="styled-slider" oninput="document.getElementById('demo-education-val').textContent = this.value">
           </div>
 
           <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
@@ -97,7 +103,7 @@
           <div id="demo-add-lang-wrap" style="display: none; background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; margin-bottom: 12px;">
             <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
               <label for="demo-add-lang-count" style="font-weight: bold; margin-bottom: 4px;">כמה שפות נוספות אתה דובר?</label>
-              <input type="number" inputmode="numeric" pattern="[0-9]*" id="demo-add-lang-count" min="1" max="10" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+              <input type="number" id="demo-add-lang-count" min="1" max="10" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
             </div>
             
             <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
@@ -105,14 +111,20 @@
               <input type="text" id="demo-add-lang-name" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
             </div>
 
-            <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-              <label for="demo-add-lang-age" style="font-weight: bold; margin-bottom: 4px;">באיזה גיל התחלת לדבר את השפה?</label>
-              <input type="number" inputmode="numeric" pattern="[0-9]*" id="demo-add-lang-age" min="0" max="120" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+            <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+              <label for="demo-add-lang-age" style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span>באיזה גיל התחלת לדבר את השפה?</span>
+                <span id="demo-add-lang-age-val" style="color: var(--accent); font-size: 1.3rem; font-weight: 800; background: rgba(0,0,0,0.2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">10</span>
+              </label>
+              <input type="range" id="demo-add-lang-age" min="0" max="100" value="10" class="styled-slider" oninput="document.getElementById('demo-add-lang-age-val').textContent = this.value">
             </div>
 
-            <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-              <label for="demo-add-lang-prof" style="font-weight: bold; margin-bottom: 4px;">מהי רמת השליטה שלך בשפה זו? (קריאה, כתיבה ודיבור) – 1 עד 10</label>
-              <input type="number" inputmode="numeric" pattern="[0-9]*" id="demo-add-lang-prof" min="1" max="10" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
+            <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
+              <label for="demo-add-lang-prof" style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span>רמת שליטה (1-10):</span>
+                <span id="demo-add-lang-prof-val" style="color: var(--accent); font-size: 1.3rem; font-weight: 800; background: rgba(0,0,0,0.2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">5</span>
+              </label>
+              <input type="range" id="demo-add-lang-prof" min="1" max="10" value="5" class="styled-slider" oninput="document.getElementById('demo-add-lang-prof-val').textContent = this.value">
             </div>
 
             <div style="margin-bottom: 12px; display: flex; flex-direction: column;">

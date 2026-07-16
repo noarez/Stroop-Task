@@ -14,34 +14,47 @@
 </head>
 <body>
 
-  <!-- ══════════════════════ SCREEN 0: DEMOGRAPHICS ══════════════════════ -->
-  <div id="screen-demographics" class="screen active">
+  <!-- ══════════════════════ SCREEN 0: INTRO / CONSENT ══════════════════════ -->
+  <div id="screen-intro" class="screen active">
     <div class="card wide-card">
       <div class="logo-badge">🔬</div>
       <h1>ברוכים הבאים למחקר</h1>
       <p class="subtitle">הסבר קצר על המחקר</p>
       <div class="divider"></div>
-      
+
       <div class="instructions-block">
         <p style="margin-bottom: 12px;"><strong>משתתף/ת יקר/ה!</strong><br>
         שלום לכולם, אנחנו אלה גולדברג ונועה רזניק סטודנטיות לפסיכולוגיה, שאלון זה מועבר במסגרת עבודה סמינריונית לתואר ראשון (BA) בפסיכולוגיה.</p>
-        
+
         <p style="margin-bottom: 12px;">המחקר עוסק בקשר בין רקע אישי ומאפיינים דמוגרפיים לבין תפקודים ניהוליים.</p>
-        
+
         <p style="margin-bottom: 12px;">אודה לך אם תסכים/י להשתתף במחקר שלנו ותסייע/י בהשיבך על השאלות השונות. לתשומת לבך ההשתתפות במחקר הינה אנונימית, המידע שיימסר ישמש לצורכי מחקר ולא יועבר לגורם אחר. כמו כן, חשוב לענות על כל השאלות. השאלות מבטאות את דעתך האישית.</p>
-        
+
         <p style="margin-bottom: 12px;">אציין, כי אם הינך מרגיש/ה אי נוחות, אינך חייב/ת לסיים את המחקר ויכול/ה לפרוש בכל עת.</p>
-        
+
         <p style="margin-bottom: 12px;">נשמח לעמוד לעזרתכם, בכל שאלה או פניה.<br>
         מייל אישי : noa.rez@gmail.com, ellagold283@gmail.com<br>
         מספר טל' : 054-9989598, 054-7805806</p>
-        
+
         <p style="margin-bottom: 24px;">בברכה,<br>אלה ונועה.</p>
+      </div>
 
-        <p style="font-weight: bold; font-size: 1.05rem;">
-          כדי להמשיך, אנא מלאו את הפרטים הבאים:
-        </p>
+      <button class="btn btn-primary" onclick="showScreen('screen-demographics')">
+        הבא
+        <span class="btn-arrow">←</span>
+      </button>
+    </div>
+  </div>
 
+  <!-- ══════════════════════ SCREEN 1: DEMOGRAPHICS ══════════════════════ -->
+  <div id="screen-demographics" class="screen">
+    <div class="card wide-card">
+      <div class="logo-badge">📋</div>
+      <h1>פרטים אישיים</h1>
+      <p class="subtitle">אנא מלאו את הפרטים הבאים</p>
+      <div class="divider"></div>
+
+      <div class="instructions-block">
         <form id="demographics-form" onsubmit="submitDemographics(event)">
           <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
             <label for="demo-age" style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
@@ -50,7 +63,7 @@
             </label>
             <input type="range" id="demo-age" required min="10" max="100" value="25" class="styled-slider" oninput="document.getElementById('demo-age-val').textContent = this.value">
           </div>
-          
+
           <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
             <label style="font-weight: bold; margin-bottom: 4px;">מגדר:</label>
             <div class="button-group">

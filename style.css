@@ -70,6 +70,7 @@ body {
 }
 
 /* Make informational screens scrollable globally */
+#screen-intro,
 #screen-demographics,
 #screen-onboarding,
 #screen-transition,

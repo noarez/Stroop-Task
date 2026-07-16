@@ -219,8 +219,12 @@ function toggleAddLang() {
     if (container.children.length === 0) {
       addLanguageBlock();
     }
+    // Restore required attribute when visible
+    container.querySelectorAll('input.lang-name, input[type="radio"]').forEach(el => el.required = true);
   } else {
     wrap.style.display = 'none';
+    // Remove required attribute from hidden fields to allow form submission
+    container.querySelectorAll('input.lang-name, input[type="radio"]').forEach(el => el.required = false);
   }
 }
 
@@ -616,6 +620,6 @@ async function submitData() {
     });
   });
 
-  showScreen('screen-demographics');
+  showScreen('screen-intro');
   console.log(`[STROOP] Session started. ID: ${STATE.participantId}`);
 })();

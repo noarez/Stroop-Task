@@ -265,7 +265,7 @@ function addLanguageBlock() {
 
     <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
       <label style="font-weight: bold; margin-bottom: 4px;">באיזו תדירות אתה משתמש בשפה זו ביומיום?</label>
-      <div class="button-group">
+      <div class="freq-grid">
         <label class="btn-radio">
           <input type="radio" name="lang-freq-${langBlockCounter}" value="בכלל לא" required>
           <span>בכלל לא</span>
@@ -275,12 +275,12 @@ function addLanguageBlock() {
           <span>לעתים רחוקות</span>
         </label>
         <label class="btn-radio">
-          <input type="radio" name="lang-freq-${langBlockCounter}" value="מספר פעמים בשבוע" required>
-          <span>פעמים בשבוע</span>
+          <input type="radio" name="lang-freq-${langBlockCounter}" value="מדי כמה ימים" required>
+          <span>מדי כמה ימים</span>
         </label>
         <label class="btn-radio">
-          <input type="radio" name="lang-freq-${langBlockCounter}" value="בכל יום" required>
-          <span>בכל יום</span>
+          <input type="radio" name="lang-freq-${langBlockCounter}" value="כל יום" required>
+          <span>כל יום</span>
         </label>
       </div>
     </div>

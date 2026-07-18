@@ -302,6 +302,13 @@ p {
   flex-wrap: wrap;
 }
 
+/* ── Frequency scale grid (4 options, responsive 4→2 cols) ── */
+.freq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
 .btn-radio {
   flex: 1;
   min-width: 80px;
@@ -321,10 +328,14 @@ p {
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text-dim);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-align: center;
   height: 100%;
   font-size: 0.95rem;
+}
+
+.btn-radio span:active {
+  transform: scale(0.92);
 }
 
 .btn-radio input[type="radio"]:checked + span {
@@ -339,6 +350,43 @@ p {
 }
 .btn-radio input[type="radio"]:checked + span:hover {
   background: var(--accent);
+}
+
+/* ── Form Inputs ── */
+input[type="text"], select {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+input[type="text"]:focus, select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  outline: none;
+  background: var(--bg-card);
+  transform: translateY(-2px);
+}
+
+/* ── Form Animations ── */
+@keyframes slideDownFadeIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#demographics-form > div:not([style*="display: none"]) {
+  animation: slideDownFadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+}
+#demographics-form > div:nth-child(1) { animation-delay: 0.05s; }
+#demographics-form > div:nth-child(2) { animation-delay: 0.1s; }
+#demographics-form > div:nth-child(4) { animation-delay: 0.15s; }
+#demographics-form > div:nth-child(5) { animation-delay: 0.2s; }
+#demographics-form > div:nth-child(6) { animation-delay: 0.25s; }
+#demographics-form > button {
+  animation: slideDownFadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+#demo-gender-other-wrap, #demo-add-lang-wrap, .lang-block {
+  animation: slideDownFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* ── Range Sliders ── */
@@ -358,10 +406,13 @@ p {
   margin-top: -12px;
   box-shadow: 0 0 16px rgba(107,138,255,0.4);
   border: 2px solid #fff;
-  transition: transform 0.1s;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.styled-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
 }
 .styled-slider::-webkit-slider-thumb:active {
-  transform: scale(1.15);
+  transform: scale(0.9);
 }
 .styled-slider::-webkit-slider-runnable-track {
   width: 100%;
@@ -369,6 +420,10 @@ p {
   cursor: pointer;
   background: rgba(255,255,255,0.15);
   border-radius: 3px;
+  transition: background 0.3s ease;
+}
+.styled-slider:hover::-webkit-slider-runnable-track {
+  background: rgba(255,255,255,0.25);
 }
 .styled-slider:focus {
   outline: none;

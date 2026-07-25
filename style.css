@@ -823,6 +823,107 @@ strong {
 }
 
 /* ══════════════════════════════════════════
+   AGE STARTED PILL GRID (5 Segments)
+══════════════════════════════════════════ */
+.age-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.pill-radio {
+  cursor: pointer;
+  user-select: none;
+}
+
+.pill-radio input[type="radio"] {
+  display: none;
+}
+
+.pill-radio span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  background: var(--bg-card2);
+  border: 1.5px solid var(--border-md);
+  border-radius: 50px;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: all 0.2s var(--spring);
+  text-align: center;
+}
+
+.pill-radio span:active {
+  transform: scale(0.93);
+}
+
+.pill-radio input[type="radio"]:checked + span {
+  background: var(--grad-btn);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 4px 14px var(--accent-glow-md);
+}
+
+/* ══════════════════════════════════════════
+   DAILY FREQUENCY 2x2 GRID WITH DOT BADGES
+══════════════════════════════════════════ */
+.freq-grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.freq-chip {
+  cursor: pointer;
+  user-select: none;
+}
+
+.freq-chip input[type="radio"] {
+  display: none;
+}
+
+.freq-chip span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--bg-card2);
+  border: 1.5px solid var(--border-md);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s var(--spring);
+}
+
+.freq-chip span:active {
+  transform: scale(0.96);
+}
+
+.freq-chip input[type="radio"]:checked + span {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* Color indicator dots */
+.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-gray   { background: #94a3b8; }
+.dot-yellow { background: #f59e0b; }
+.dot-blue   { background: #3b82f6; }
+.dot-green  { background: #10b981; }
+
+/* ══════════════════════════════════════════
    FORM INPUTS
 ══════════════════════════════════════════ */
 input[type="text"],
@@ -1354,23 +1455,40 @@ kbd {
    RESPONSIVE — MOBILE (max 480px)
 ══════════════════════════════════════════ */
 @media (max-width: 480px) {
-  h1 { font-size: 1.6rem; }
-  h2 { font-size: 1rem; }
-  p, .info-box { font-size: 0.88rem; }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 0.98rem; }
+  p, .info-box { font-size: 0.86rem; }
 
-  .card, .wide-card {
-    padding: 24px 16px;
-    border-radius: var(--radius-md);
+  #screen-demographics {
+    padding-top: 36px;
+    padding-bottom: 30px;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .logo-badge { font-size: 40px; margin-bottom: 12px; }
-  .divider { margin: 18px 0; }
+  .card, .wide-card {
+    padding: 18px 14px;
+    border-radius: var(--radius-md);
+    margin: 10px auto;
+  }
 
-  .instructions-block { padding: 14px 16px; gap: 12px; }
-  .preview-grid { gap: 8px; }
-  .color-btn:disabled { padding: 10px 6px; font-size: 0.9rem; }
+  .question-card {
+    padding: 16px 14px;
+    margin-bottom: 14px;
+  }
 
-  .btn { padding: 14px 20px; font-size: 1rem; }
+  .question-label {
+    font-size: 0.98rem;
+    margin-bottom: 12px;
+  }
+
+  .logo-badge { font-size: 36px; margin-bottom: 10px; }
+  .divider { margin: 14px 0; }
+
+  .instructions-block { padding: 12px 14px; gap: 10px; }
+  .preview-grid { gap: 6px; }
+  .color-btn:disabled { padding: 8px 4px; font-size: 0.85rem; }
+
+  .btn { padding: 12px 18px; font-size: 0.98rem; }
 
   .trial-header {
     padding: 10px 14px 8px;
@@ -1411,18 +1529,60 @@ kbd {
 
   .session-id-note { font-size: 0.68rem; }
 
-  .chip-grid.cols-2 {
-    grid-template-columns: 1fr;
+  /* 3-column chip grid (Gender: זכר, נקבה, אחר) - Zero-scroll compact vertical layout */
+  .chip-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
   }
 
-  .question-label { font-size: 1.05rem; }
+  .chip-grid.cols-3 .card-chip-inner {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 10px 4px;
+    min-height: 52px;
+    gap: 4px;
+    font-size: 0.88rem;
+  }
+
+  .chip-grid.cols-3 .card-chip-inner .chip-icon {
+    font-size: 1.2rem;
+  }
+
+  .chip-grid.cols-3 .card-chip-inner .chip-text {
+    white-space: nowrap;
+  }
+
+  /* 2-column chip grid (Mother tongue, Yes/No) */
+  .chip-grid.cols-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .chip-grid.cols-2 .card-chip-inner {
+    padding: 10px 8px;
+    min-height: 46px;
+    font-size: 0.88rem;
+    gap: 6px;
+  }
+
+  /* 1-column chip grid (Education) */
+  .chip-grid.cols-1 .card-chip-inner {
+    padding: 10px 12px;
+    min-height: 44px;
+    font-size: 0.85rem;
+    gap: 8px;
+  }
 }
 
 /* ══════════════════════════════════════════
    RESPONSIVE — SHORT SCREENS (max-height 700px)
 ══════════════════════════════════════════ */
 @media (max-height: 700px) {
-  .card, .wide-card { margin: 28px auto; }
+  .card, .wide-card { margin: 12px auto; padding: 18px 16px; }
+
+  .question-card { padding: 16px 14px; margin-bottom: 12px; }
 
   .stimulus, .fixation {
     margin-bottom: clamp(120px, 22vh, 170px);
@@ -1442,3 +1602,4 @@ kbd {
   .feedback { bottom: 140px; font-size: 1.1rem; }
   .trial-header { padding: 8px 14px 6px; }
 }
+

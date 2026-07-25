@@ -654,24 +654,24 @@ function addLanguageBlock() {
 
     <div style="display:flex; flex-direction:column; gap:8px;">
       <label style="font-weight:600; font-size:0.9rem; color:var(--text-dim);">באיזה גיל התחלת לדבר בשפה?</label>
-      <div class="freq-grid">
-        <label class="btn-radio">
+      <div class="age-pill-grid">
+        <label class="pill-radio">
           <input type="radio" class="lang-age" name="lang-age-${n}" value="0–6">
           <span dir="ltr">0–6</span>
         </label>
-        <label class="btn-radio">
+        <label class="pill-radio">
           <input type="radio" class="lang-age" name="lang-age-${n}" value="6–12">
           <span dir="ltr">6–12</span>
         </label>
-        <label class="btn-radio">
+        <label class="pill-radio">
           <input type="radio" class="lang-age" name="lang-age-${n}" value="12–18">
           <span dir="ltr">12–18</span>
         </label>
-        <label class="btn-radio">
+        <label class="pill-radio">
           <input type="radio" class="lang-age" name="lang-age-${n}" value="18–30">
           <span dir="ltr">18–30</span>
         </label>
-        <label class="btn-radio">
+        <label class="pill-radio">
           <input type="radio" class="lang-age" name="lang-age-${n}" value="30+">
           <span dir="ltr">30+</span>
         </label>
@@ -689,22 +689,22 @@ function addLanguageBlock() {
 
     <div style="display:flex; flex-direction:column; gap:8px;">
       <label style="font-weight:600; font-size:0.9rem; color:var(--text-dim);">תדירות שימוש יומיומי</label>
-      <div class="freq-grid">
-        <label class="btn-radio">
+      <div class="freq-grid-2x2">
+        <label class="freq-chip">
           <input type="radio" name="lang-freq-${n}" value="בכלל לא">
-          <span>בכלל לא</span>
+          <span><i class="dot dot-gray"></i> בכלל לא</span>
         </label>
-        <label class="btn-radio">
+        <label class="freq-chip">
           <input type="radio" name="lang-freq-${n}" value="לעתים רחוקות">
-          <span>לעתים רחוקות</span>
+          <span><i class="dot dot-yellow"></i> לעתים רחוקות</span>
         </label>
-        <label class="btn-radio">
+        <label class="freq-chip">
           <input type="radio" name="lang-freq-${n}" value="מדי כמה ימים">
-          <span>מדי כמה ימים</span>
+          <span><i class="dot dot-blue"></i> מדי כמה ימים</span>
         </label>
-        <label class="btn-radio">
+        <label class="freq-chip">
           <input type="radio" name="lang-freq-${n}" value="כל יום">
-          <span>כל יום</span>
+          <span><i class="dot dot-green"></i> כל יום</span>
         </label>
       </div>
     </div>

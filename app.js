@@ -151,7 +151,7 @@ function startCountdownBar() {
   const wrap = document.getElementById('countdown-bar-wrap');
   if (!bar || !wrap) return;
   
-  if (!state.isPractice) {
+  if (STATE.currentBlock !== 'practice') {
     setHidden(wrap, true);
     return;
   }

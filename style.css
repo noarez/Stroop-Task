@@ -826,12 +826,14 @@ strong {
    AGE STARTED PILL GRID (5 Segments)
 ══════════════════════════════════════════ */
 .age-pill-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
 .pill-radio {
+  flex: 1 1 calc(33.333% - 6px);
+  min-width: 70px;
   cursor: pointer;
   user-select: none;
 }
@@ -870,8 +872,8 @@ strong {
    DAILY FREQUENCY 2x2 GRID WITH DOT BADGES
 ══════════════════════════════════════════ */
 .freq-grid-2x2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
@@ -1531,27 +1533,27 @@ kbd {
 
   /* 3-column chip grid (Gender: זכר, נקבה, אחר) - Zero-scroll compact vertical layout */
   .chip-grid.cols-3 {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .chip-grid.cols-3 .card-chip-inner {
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
-    text-align: center;
-    padding: 10px 4px;
-    min-height: 52px;
-    gap: 4px;
-    font-size: 0.88rem;
+    text-align: right;
+    padding: 12px 16px;
+    min-height: 56px;
+    gap: 12px;
+    font-size: 0.95rem;
   }
 
   .chip-grid.cols-3 .card-chip-inner .chip-icon {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
   }
 
   .chip-grid.cols-3 .card-chip-inner .chip-text {
-    white-space: nowrap;
+    white-space: normal;
   }
 
   /* 2-column chip grid (Mother tongue, Yes/No) */

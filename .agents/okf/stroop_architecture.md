@@ -28,9 +28,12 @@ The Stroop Task application is a full-stack psychological research web app built
 - **Gateway:** AWS API Gateway HTTP API (`stroop-http-api`).
 - **Endpoints:**
   - `POST /api/submit`: Writes per-participant trial JSON files to S3.
-  - `GET /admin`: Password-protected dashboard (Key: `stroop_admin_2024`).
-  - `GET /admin/download`: Aggregates all JSON files into a merged CSV download.
-  - `GET /admin/download-psytoolkit`: Exports a PsyToolkit-compatible ZIP package (`data.csv` + `stroop/<pid>.txt`).
+  - `GET /analytics`: Research Analytics Dashboard with dataset mode tabs:
+    - `?key=organic` (Default): Real participant submissions.
+    - `?key=acme`: Pre-seeded realistic Stroop Effect literature simulation ($N=48$).
+    - `?key=testing`: Developer test runs.
+  - `GET /analytics/download`: Downloads aggregated CSV for selected dataset mode.
+  - `GET /analytics/download-psytoolkit`: Exports PsyToolkit-compatible ZIP package for selected mode.
 
 ### 3. Data Storage Pipeline
 - **Bucket:** `stroop-task-data-462355913922`

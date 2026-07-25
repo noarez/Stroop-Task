@@ -1,10 +1,10 @@
 /* ─────────────────────────────────────────
    STROOP TASK — EXPRESS SERVER
    - Serves static files
-   - POST /api/submit              : appends participant data to data/results.csv
-   - GET  /admin                   : password-protected admin dashboard
-   - GET  /admin/download          : serves the full CSV to the researcher
-   - GET  /admin/download-psytoolkit : ZIP in PsyToolkit-compatible format
+   - POST /api/submit                  : appends participant data to data/results.csv
+   - GET  /analytics                   : research analytics dashboard
+   - GET  /analytics/download          : serves the CSV by mode (organic|acme|testing)
+   - GET  /analytics/download-psytoolkit : ZIP in PsyToolkit-compatible format
 ───────────────────────────────────────── */
 
 'use strict';
@@ -12,287 +12,265 @@
 const express  = require('express');
 const fs       = require('fs');
 const path     = require('path');
-const AdmZip = require('adm-zip');
+const AdmZip   = require('adm-zip');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Admin secret key ──────────────────────────────────────────────────────────
-// Change this before deploying, or set ADMIN_KEY as an environment variable!
 const ADMIN_KEY = process.env.ADMIN_KEY || 'stroop_admin_2024';
 
-// ── Paths ─────────────────────────────────────────────────────────────────────
 const DATA_DIR  = path.join(__dirname, 'data');
 const CSV_FILE  = path.join(DATA_DIR, 'results.csv');
 
-// ── CSV column order (must match app.js) ─────────────────────────────────────
 const CSV_HEADERS = [
-  'participant_id',
-  'age',
-  'gender',
-  'gender_other',
-  'education_years',
-  'mother_tongue',
-  'has_add_lang',
-  'additional_languages_data',
-  'is_task',
-  'trial_number',
-  'block_trial_number',
-  'condition',
-  'displayed_word',
-  'ink_color',
-  'user_input',
-  'input_method',
-  'accuracy',
-  'rt_ms',
-  'timestamp_iso',
+  'participant_id','age','gender','gender_other','education_years',
+  'mother_tongue','has_add_lang','additional_languages_data',
+  'is_task','trial_number','block_trial_number','condition',
+  'displayed_word','ink_color','user_input','input_method',
+  'accuracy','rt_ms','timestamp_iso',
 ];
 
-// ── Ensure data directory and CSV header row exist ────────────────────────────
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-if (!fs.existsSync(CSV_FILE)) {
-  // UTF-8 BOM so Excel opens Hebrew text correctly
-  fs.writeFileSync(CSV_FILE, '\uFEFF' + CSV_HEADERS.join(',') + '\r\n', 'utf8');
-  console.log('[CSV] Created new results file:', CSV_FILE);
+function ensureDataDir() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
 }
 
-// ── Middleware ────────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '2mb' }));
-app.use(express.static(path.join(__dirname)));   // serves index.html, app.js, style.css
-
-// ── Helper: escape a CSV cell ─────────────────────────────────────────────────
 function csvCell(val) {
   if (val === null || val === undefined) return '';
   const s = String(val);
-  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
-    return '"' + s.replace(/"/g, '""') + '"';
-  }
-  return s;
+  return (s.includes(',') || s.includes('"') || s.includes('\n'))
+    ? '"' + s.replace(/"/g, '""') + '"'
+    : s;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  POST /api/submit
-//  Body: { trials: [ { participant_id, is_practice, ... }, ... ] }
-// ─────────────────────────────────────────────────────────────────────────────
-app.post('/api/submit', (req, res) => {
-  try {
-    const { trials } = req.body;
+function parseCSVLine(line) {
+  const fields = [];
+  let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) {
+      if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+      else if (ch === '"')                    { inQ = false; }
+      else                                    { cur += ch; }
+    } else {
+      if (ch === '"')  { inQ = true; }
+      else if (ch === ',') { fields.push(cur); cur = ''; }
+      else               { cur += ch; }
+    }
+  }
+  fields.push(cur);
+  return fields;
+}
 
-    if (!Array.isArray(trials) || trials.length === 0) {
-      return res.status(400).json({ ok: false, error: 'No trial data provided.' });
+function generateAcmeTrials() {
+  const words = ['אדום', 'כחול', 'ירוק', 'צהוב'];
+  const pCount = 48;
+  const trials = [];
+
+  const genders = ['נקבה', 'נקבה', 'זכר', 'זכר', 'זכר', 'נקבה', 'אחר'];
+  const edus = ['תואר אקדמי ראשון', 'השכלה תיכונית עם תעודת בגרות מלאה', 'תואר אקדמי שני ומעלה', 'השכלה על-תיכונית'];
+  const tongues = ['עברית', 'עברית', 'עברית', 'עברית', 'ערבית', 'רוסית', 'אנגלית'];
+
+  let seed = 42;
+  function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+  function rndInt(min, max) { return Math.floor(rnd() * (max - min + 1)) + min; }
+  function sample(arr) { return arr[Math.floor(rnd() * arr.length)]; }
+
+  for (let i = 1; i <= pCount; i++) {
+    const pid = `ACME-P${String(i).padStart(2, '0')}`;
+    const age = rndInt(19, 62);
+    const gender = sample(genders);
+    const edu = sample(edus);
+    const tongue = sample(tongues);
+    const hasAdd = tongue === 'עברית' ? (rnd() > 0.3 ? 'כן' : 'לא') : 'כן';
+    const addLangData = hasAdd === 'כן' ? (tongue === 'עברית' ? 'אנגלית (Prof: 7/10)' : 'עברית (Prof: 9/10)') : '';
+    const baseFactor = 0.85 + rnd() * 0.3;
+
+    for (let pt = 1; pt <= 6; pt++) {
+      const isCong = pt % 2 === 1;
+      const w = sample(words);
+      const ink = isCong ? w : sample(words.filter(x => x !== w));
+      const isAcc = rnd() > 0.15;
+      const rt = Math.round((isCong ? 3800 : 4500) * baseFactor + rnd() * 800);
+      trials.push({
+        participant_id: pid, age, gender, education_years: edu, mother_tongue: tongue,
+        has_add_lang: hasAdd, additional_languages_data: addLangData,
+        is_task: false, trial_number: pt, block_trial_number: pt,
+        condition: isCong ? 'congruent' : 'incongruent',
+        displayed_word: w, ink_color: ink,
+        user_input: isAcc ? ink : sample(words.filter(x => x !== ink)),
+        accuracy: isAcc, rt_ms: rt,
+        timestamp_iso: new Date(1784900000000 + i * 3600000 + pt * 5000).toISOString()
+      });
     }
 
-    // Build CSV rows
-    const rows = trials.map(t =>
-      CSV_HEADERS.map(h => csvCell(t[h])).join(',')
-    ).join('\r\n');
+    const conditions = [];
+    for (let c = 0; c < 30; c++) conditions.push('congruent');
+    for (let inc = 0; inc < 30; inc++) conditions.push('incongruent');
+    for (let s = conditions.length - 1; s > 0; s--) {
+      const j = Math.floor(rnd() * (s + 1));
+      [conditions[s], conditions[j]] = [conditions[j], conditions[s]];
+    }
 
-    fs.appendFileSync(CSV_FILE, rows + '\r\n', 'utf8');
+    conditions.forEach((cond, idx) => {
+      const isCong = cond === 'congruent';
+      const w = sample(words);
+      const ink = isCong ? w : sample(words.filter(x => x !== w));
+      const isTimeout = rnd() < 0.01;
+      const isCorrect = !isTimeout && (rnd() < (isCong ? 0.975 : 0.94));
+      const baseRt = isCong ? 612 : 738;
+      const fatigue = idx * 0.6;
+      const noise = (rnd() - 0.5) * 160;
+      const rt = isTimeout ? 2000 : Math.round(Math.max(380, (baseRt + fatigue + noise) * baseFactor));
 
-    console.log(`[SUBMIT] +${trials.length} trials from ${trials[0]?.participant_id}`);
-    res.json({ ok: true, saved: trials.length });
-  } catch (err) {
-    console.error('[SUBMIT ERROR]', err);
-    res.status(500).json({ ok: false, error: 'Server error saving data.' });
+      trials.push({
+        participant_id: pid, age, gender, education_years: edu, mother_tongue: tongue,
+        has_add_lang: hasAdd, additional_languages_data: addLangData,
+        is_task: true, trial_number: idx + 1, block_trial_number: idx + 1,
+        condition: cond, displayed_word: w, ink_color: ink,
+        user_input: isTimeout ? 'timeout' : (isCorrect ? ink : sample(words.filter(x => x !== ink))),
+        accuracy: isCorrect, rt_ms: isTimeout ? null : rt,
+        timestamp_iso: new Date(1784900000000 + i * 3600000 + 60000 + idx * 2500).toISOString()
+      });
+    });
   }
-});
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  GET /admin?key=...
-//  Admin dashboard — shows row count, last submissions, download link
-// ─────────────────────────────────────────────────────────────────────────────
-app.get('/admin', (req, res) => {
-  if (req.query.key !== ADMIN_KEY) {
-    return res.status(403).send(adminDeniedPage());
-  }
+  return trials;
+}
+
+function getLocalDatasetByMode(key) {
+  const mode = key === 'acme' ? 'acme' : (key === 'testing' || key === ADMIN_KEY) ? 'testing' : 'organic';
+  if (mode === 'acme') return { mode, trials: generateAcmeTrials() };
 
   let trials = [];
   try {
     const raw = fs.readFileSync(CSV_FILE, 'utf8');
     const lines = raw.split(/\r?\n/).filter(l => l.trim());
     if (lines.length > 1) {
-      const headers = lines[0].replace(/^\uFEFF/, '').split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      const headers = parseCSVLine(lines[0].replace(/^\uFEFF/, ''));
       trials = lines.slice(1).map(line => {
-        const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-        const obj = {};
-        headers.forEach((h, i) => { obj[h] = vals[i] || ''; });
+        const vals = parseCSVLine(line);
+        const obj  = {};
+        headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
         return obj;
       });
     }
   } catch (_) {}
 
-  res.send(adminPage(ADMIN_KEY, trials));
-});
+  if (mode === 'testing') return { mode, trials };
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  GET /admin/download?key=...
-//  Streams the full CSV to the researcher's browser
-// ─────────────────────────────────────────────────────────────────────────────
-app.get('/admin/download', (req, res) => {
-  if (req.query.key !== ADMIN_KEY) {
-    return res.status(403).send('Unauthorized.');
-  }
-  const filename = `stroop_results_${new Date().toISOString().slice(0, 10)}.csv`;
-  res.download(CSV_FILE, filename, err => {
-    if (err) console.error('[DOWNLOAD ERROR]', err);
+  const organic = trials.filter(t => {
+    const pid = String(t.participant_id || '').toUpperCase();
+    return !pid.startsWith('TEST') && !pid.includes('LIVE-DOMAIN');
   });
-});
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  GET /admin/download-psytoolkit?key=...
-//  Generates a ZIP file that mirrors PsyToolkit's survey+experiment export:
-//
-//  psytoolkit_stroop_YYYY-MM-DD.zip
-//  ├── data.csv              ← one row per participant (demographics)
-//  └── stroop/
-//      ├── <participant_id>.txt   ← space-separated trial rows per participant
-//      └── ...
-//
-//  Per-participant .txt format (4 space-separated columns):
-//    col1: block_type  (1=practice, 2=real)
-//    col2: condition   (1=congruent, 2=incongruent)
-//    col3: STATUS      (1=correct, 2=wrong, 3=timeout)
-//    col4: RT          (integer ms; 0 on timeout)
-// ─────────────────────────────────────────────────────────────────────────────
-app.get('/admin/download-psytoolkit', (req, res) => {
-  if (req.query.key !== ADMIN_KEY) {
-    return res.status(403).send('Unauthorized.');
+  return { mode, trials: organic };
+}
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(__dirname));
+
+app.post('/api/submit', (req, res) => {
+  const { trials } = req.body;
+  if (!Array.isArray(trials) || trials.length === 0) {
+    return res.status(400).json({ ok: false, error: 'No trial data provided.' });
   }
 
-  // ── Parse the CSV into trial records ────────────────────────────────────
-  // Proper RFC-4180-aware CSV parser (handles commas inside quoted fields)
-  function parseCSVLine(line) {
-    const fields = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (inQ) {
-        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
-        else if (ch === '"')                    { inQ = false; }
-        else                                    { cur += ch; }
-      } else {
-        if (ch === '"')  { inQ = true; }
-        else if (ch === ',') { fields.push(cur); cur = ''; }
-        else               { cur += ch; }
-      }
-    }
-    fields.push(cur);
-    return fields;
+  ensureDataDir();
+
+  const fileExists = fs.existsSync(CSV_FILE);
+  const rows = [];
+
+  if (!fileExists) {
+    rows.push('\uFEFF' + CSV_HEADERS.join(','));
   }
 
-  let trials = [];
-  try {
-    const raw   = fs.readFileSync(CSV_FILE, 'utf8');
-    const lines = raw.split(/\r?\n/).filter(l => l.trim());
-    if (lines.length < 2) {
-      return res.status(404).send('No data yet.');
-    }
-    const headers = parseCSVLine(lines[0].replace(/^\uFEFF/, ''));
-    trials = lines.slice(1).map(line => {
-      const vals = parseCSVLine(line);
-      const obj  = {};
-      headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
-      return obj;
-    });
-  } catch (err) {
-    console.error('[PSYTOOLKIT DL] CSV read error:', err);
-    return res.status(500).send('Error reading data.');
-  }
-
-  // ── Group trials by participant_id ───────────────────────────────────────
-  const byParticipant = {};
   trials.forEach(t => {
-    const pid = t.participant_id || 'unknown';
-    if (!byParticipant[pid]) byParticipant[pid] = [];
-    byParticipant[pid].push(t);
+    const line = CSV_HEADERS.map(h => csvCell(t[h])).join(',');
+    rows.push(line);
   });
 
-  // ── Helper: map one trial row → PsyToolkit space-separated string ────────
+  fs.appendFile(CSV_FILE, rows.join('\r\n') + '\r\n', 'utf8', err => {
+    if (err) {
+      console.error('[SUBMIT ERROR]', err);
+      return res.status(500).json({ ok: false, error: 'Failed to write data.' });
+    }
+    console.log(`[SUBMIT SUCCESS] Saved ${trials.length} trials (Total now in file).`);
+    res.json({ ok: true, saved: trials.length });
+  });
+});
+
+app.get(['/analytics', '/admin'], (req, res) => {
+  const { mode, trials } = getLocalDatasetByMode(req.query.key);
+  res.send(analyticsHtml(mode, trials));
+});
+
+app.get(['/analytics/download', '/admin/download'], (req, res) => {
+  const { mode, trials } = getLocalDatasetByMode(req.query.key);
+  const rows = trials.map(t => CSV_HEADERS.map(h => csvCell(t[h])).join(',')).join('\r\n');
+  const csv  = '\uFEFF' + CSV_HEADERS.join(',') + '\r\n' + rows + '\r\n';
+  const filename = `stroop_results_${mode}_${new Date().toISOString().slice(0, 10)}.csv`;
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(csv);
+});
+
+app.get(['/analytics/download-psytoolkit', '/admin/download-psytoolkit'], (req, res) => {
+  const { mode, trials } = getLocalDatasetByMode(req.query.key);
+  const byPid = {};
+  trials.forEach(t => { const p = t.participant_id || 'unknown'; (byPid[p] = byPid[p] || []).push(t); });
+
   function toPsyRow(t) {
-    const blockType = t.is_task === 'true' ? 2 : 1;
-    const condition = t.condition === 'congruent' ? 1 : 2;
-    const status    = t.user_input === 'timeout' ? 3
-                    : t.accuracy === 'true'      ? 1 : 2;
-    const rt        = t.rt_ms && t.rt_ms !== 'null'
-                    ? Math.round(parseFloat(t.rt_ms))
-                    : 0;
-    return `${blockType} ${condition} ${status} ${rt}`;
+    const b = (t.is_task === true || t.is_task === 'true') ? 2 : 1;
+    const c = t.condition === 'congruent' ? 1 : 2;
+    const s = t.user_input === 'timeout' ? 3 : (t.accuracy === true || t.accuracy === 'true') ? 1 : 2;
+    const r = t.rt_ms != null && t.rt_ms !== 'null' ? Math.round(parseFloat(t.rt_ms)) : 0;
+    return `${b} ${c} ${s} ${r}`;
   }
 
-  // ── Build data.csv content (demographics, one row per participant) ────────
-  const surveyHeaders = [
-    'participant', 'start_time', 'end_time',
-    'age', 'gender', 'gender_other', 'education_years',
-    'mother_tongue', 'has_add_lang', 'additional_languages_data',
-    'stroop',
-  ];
+  function escVal(v) {
+    if (!v) return '';
+    v = String(v);
+    return (v.includes(',') || v.includes('"')) ? `"${v.replace(/"/g, '""')}"` : v;
+  }
 
-  const surveyRows = Object.entries(byParticipant).map(([pid, pts]) => {
-    const first = pts[0];
-    const last  = pts[pts.length - 1];
-    const esc   = v => (v && (v.includes(',') || v.includes('"')))
-                     ? `"${v.replace(/"/g, '""')}"`
-                     : (v || '');
-    return [
-      esc(pid),
-      esc(first.timestamp_iso || ''),
-      esc(last.timestamp_iso  || ''),
-      esc(first.age           || ''),
-      esc(first.gender        || ''),
-      esc(first.gender_other  || ''),
-      esc(first.education_years || ''),
-      esc(first.mother_tongue   || ''),
-      esc(first.has_add_lang    || ''),
-      esc(first.additional_languages_data || ''),
-      esc(`${pid}.txt`),
-    ].join(',');
-  });
+  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','additional_languages_data','stroop'];
+  const rows = Object.entries(byPid).map(([p, pts]) => [
+    escVal(p),
+    escVal(pts[0].timestamp_iso || ''),
+    escVal(pts[pts.length - 1].timestamp_iso || ''),
+    escVal(String(pts[0].age || '')),
+    escVal(pts[0].gender || ''),
+    escVal(pts[0].gender_other || ''),
+    escVal(String(pts[0].education_years || '')),
+    escVal(pts[0].mother_tongue || ''),
+    escVal(pts[0].has_add_lang || ''),
+    escVal(pts[0].additional_languages_data || ''),
+    escVal(`${p}.txt`)
+  ].join(','));
 
-  const dataCsvContent = [surveyHeaders.join(','), ...surveyRows].join('\r\n') + '\r\n';
-
-  // ── Build and send ZIP ─────────────────────────────────────────────────────
-  const dateStr = new Date().toISOString().slice(0, 10);
-  const zipName = `psytoolkit_stroop_${dateStr}.zip`;
+  const csvContent = [hdrs.join(','), ...rows].join('\r\n') + '\r\n';
+  const zipName = `psytoolkit_stroop_${mode}_${new Date().toISOString().slice(0, 10)}.zip`;
 
   try {
     const zip = new AdmZip();
-
-    // data.csv
-    zip.addFile('data.csv', Buffer.from(dataCsvContent, 'utf8'));
-
-    // stroop/<pid>.txt — one file per participant
-    Object.entries(byParticipant).forEach(([pid, pts]) => {
-      const rows = pts.map(toPsyRow).join('\n') + '\n';
-      zip.addFile(`stroop/${pid}.txt`, Buffer.from(rows, 'utf8'));
+    zip.addFile('data.csv', Buffer.from(csvContent, 'utf8'));
+    Object.entries(byPid).forEach(([p, pts]) => {
+      zip.addFile(`stroop/${p}.txt`, Buffer.from(pts.map(toPsyRow).join('\n') + '\n', 'utf8'));
     });
 
     const zipBuffer = zip.toBuffer();
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
-    res.setHeader('Content-Length', zipBuffer.length);
     res.send(zipBuffer);
-
-    console.log(`[PSYTOOLKIT] ZIP sent: ${zipName} (${Object.keys(byParticipant).length} participants)`);
   } catch (err) {
     console.error('[PSYTOOLKIT ZIP ERROR]', err);
     res.status(500).send('Error building ZIP.');
   }
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  HTML page builders
-// ─────────────────────────────────────────────────────────────────────────────
-
-function adminDeniedPage() {
-  return `<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;padding:80px">
-    <h1 style="color:#e05252">403 — Unauthorized</h1>
-    <p>Admin key required. Add <code>?key=YOUR_KEY</code> to the URL.</p>
-  </body></html>`;
-}
-
-function adminPage(key, trials) {
+function analyticsHtml(mode, trials) {
   const all = (trials || []).map(t => ({
     pid: t.participant_id,
     age: t.age,
@@ -364,18 +342,21 @@ function adminPage(key, trials) {
 
   const recent = all.slice(-10).reverse();
 
+  const modeTitle = mode === 'acme' ? '🔬 ACME Benchmark Simulation (N=48)' : mode === 'testing' ? '🛠️ Developer Testing Runs' : '🌐 Organic Audience Data';
+  const modeDesc  = mode === 'acme' ? 'Pre-seeded realistic Stroop Effect literature simulation modeling published benchmark metrics' : mode === 'testing' ? 'Contains all developer testing & verification sessions' : 'Live participant submissions collected from organic experiment traffic';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Stroop Research Analytics</title>
+  <title>Stroop Research Analytics — ${modeTitle}</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:32px 20px;line-height:1.5}
     .wrap{max-width:1100px;margin:0 auto}
-    .header{display:flex;justify-space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:32px}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px}
     h1{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#e8eaf0,#7c9ef5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
     .sub{color:#8b8fa8;font-size:.9rem}
     .dl-btns{display:flex;gap:12px;flex-wrap:wrap}
@@ -383,6 +364,12 @@ function adminPage(key, trials) {
     .btn-blue{background:linear-gradient(135deg,#5a7de0,#7c9ef5);color:#fff;box-shadow:0 4px 20px rgba(124,158,245,.3)}
     .btn-green{background:linear-gradient(135deg,#2db87a,#1a9e65);color:#fff;box-shadow:0 4px 20px rgba(45,184,122,.3)}
     .btn:hover{transform:translateY(-2px)}
+    
+    .tabs-bar{display:flex;background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:6px;gap:6px;margin-bottom:28px;overflow-x:auto}
+    .tab-btn{flex:1;min-width:180px;text-align:center;padding:10px 16px;border-radius:10px;font-size:.88rem;font-weight:600;color:#8b8fa8;text-decoration:none;transition:all .2s;white-space:nowrap}
+    .tab-btn:hover{color:#e8eaf0;background:rgba(255,255,255,.04)}
+    .tab-btn.active{background:linear-gradient(135deg,#5a7de0,#7c9ef5);color:#fff;box-shadow:0 4px 16px rgba(124,158,245,.3)}
+
     .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:28px}
     .card{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px}
     .card-title{font-size:.82rem;font-weight:600;color:#8b8fa8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
@@ -412,12 +399,19 @@ function adminPage(key, trials) {
     <div class="header">
       <div>
         <h1>🧠 Stroop Research & Cognitive Analytics</h1>
-        <p class="sub">Real-time Stroop Effect calculation, participant metrics, & PsyToolkit data exports</p>
+        <p class="sub">${modeDesc}</p>
       </div>
       <div class="dl-btns">
-        <a class="btn btn-blue" href="/admin/download?key=${key}">⬇ Full CSV (${totalReal})</a>
-        <a class="btn btn-green" href="/admin/download-psytoolkit?key=${key}">🧪 PsyToolkit ZIP</a>
+        <a class="btn btn-blue" href="/analytics/download?key=${mode}">⬇ Full CSV (${totalReal})</a>
+        <a class="btn btn-green" href="/analytics/download-psytoolkit?key=${mode}">🧪 PsyToolkit ZIP</a>
       </div>
+    </div>
+
+    <!-- Dataset Selector Bar -->
+    <div class="tabs-bar">
+      <a class="tab-btn ${mode === 'organic' ? 'active' : ''}" href="/analytics?key=organic">🌐 Organic Audience Data</a>
+      <a class="tab-btn ${mode === 'acme' ? 'active' : ''}" href="/analytics?key=acme">🔬 ACME Research Benchmark (N=48 Simulation)</a>
+      <a class="tab-btn ${mode === 'testing' ? 'active' : ''}" href="/analytics?key=testing">🛠️ Developer Testing Runs</a>
     </div>
 
     <div class="kpi-grid">
@@ -429,8 +423,8 @@ function adminPage(key, trials) {
 
     ${latest ? `
     <div class="insights-card">
-      <span class="badge-tag">VERIFIED SESSION · ${latest.pid}</span>
-      <div class="insights-title">🔍 Detailed Cognitive Analysis for Session: <code>${latest.pid}</code></div>
+      <span class="badge-tag">${mode === 'acme' ? 'BENCHMARK MODEL' : 'ACTIVE SESSION'} · ${latest.pid}</span>
+      <div class="insights-title">🔍 Cognitive & Demographic Profile: <code>${latest.pid}</code></div>
       <div class="insights-grid">
         <div class="insight-item">
           <strong>👤 Participant Demographics:</strong><br>
@@ -442,7 +436,7 @@ function adminPage(key, trials) {
           <strong>⚡ Cognitive Performance:</strong><br>
           • Congruent Mean RT: <strong>${latest.cRt} ms</strong><br>
           • Incongruent Mean RT: <strong>${latest.iRt} ms</strong><br>
-          • <strong>Stroop Effect: <span style="color:#a78bfa">+${latest.effect} ms</span></strong> (Cognitive Interference)
+          • <strong>Stroop Effect: <span style="color:#a78bfa">+${latest.effect} ms</span></strong> (Interference Delta)
         </div>
         <div class="insight-item">
           <strong>🎯 Accuracy & Learning:</strong><br>
@@ -465,13 +459,13 @@ function adminPage(key, trials) {
       </div>
     </div>
 
-    <div class="section-title">👥 Participant Performance Summary</div>
+    <div class="section-title">👥 Participant Performance Summary (${pSummaries.length})</div>
     <table>
       <thead>
         <tr><th>ID</th><th>Age / Gender</th><th>Education</th><th>Trials</th><th>Congruent RT</th><th>Incongruent RT</th><th>Stroop Effect</th><th>Accuracy</th></tr>
       </thead>
       <tbody>
-        ${pSummaries.map(p => `<tr><td><code>${p.pid}</code></td><td>${p.age} / ${p.gender}</td><td>${p.edu}</td><td>${p.totalReal}</td><td>${p.cRt} ms</td><td>${p.iRt} ms</td><td><strong style="color:${p.effect > 0 ? '#a78bfa' : '#52b46b'}">${p.effect > 0 ? '+' : ''}${p.effect} ms</strong></td><td><span class="badge-ok">${p.acc}%</span></td></tr>`).join('')}
+        ${pSummaries.slice(0, 50).map(p => `<tr><td><code>${p.pid}</code></td><td>${p.age} / ${p.gender}</td><td>${p.edu}</td><td>${p.totalReal}</td><td>${p.cRt} ms</td><td>${p.iRt} ms</td><td><strong style="color:${p.effect > 0 ? '#a78bfa' : '#52b46b'}">${p.effect > 0 ? '+' : ''}${p.effect} ms</strong></td><td><span class="badge-ok">${p.acc}%</span></td></tr>`).join('')}
       </tbody>
     </table>
 
@@ -512,11 +506,8 @@ function adminPage(key, trials) {
 </html>`;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  Start
-// ─────────────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n🧠 Stroop Task server running`);
-  console.log(`   App  → http://localhost:${PORT}`);
-  console.log(`   Admin→ http://localhost:${PORT}/admin?key=${ADMIN_KEY}\n`);
+  console.log(`   App       → http://localhost:${PORT}`);
+  console.log(`   Analytics → http://localhost:${PORT}/analytics\n`);
 });

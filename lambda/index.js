@@ -1,11 +1,5 @@
 'use strict';
 
-/**
- * STROOP TASK — AWS LAMBDA API HANDLER
- * Routes: POST /api/submit | GET /admin | GET /admin/download | GET /admin/download-psytoolkit
- * Env vars: DATA_BUCKET, ADMIN_KEY
- */
-
 const { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand } = require('@aws-sdk/client-s3');
 const AdmZip = require('adm-zip');
 
@@ -34,6 +28,82 @@ async function streamToBuffer(stream) {
   });
 }
 
+function generateAcmeTrials() {
+  const words = ['אדום', 'כחול', 'ירוק', 'צהוב'];
+  const pCount = 48;
+  const trials = [];
+
+  const genders = ['נקבה', 'נקבה', 'זכר', 'זכר', 'זכר', 'נקבה', 'אחר'];
+  const edus = ['תואר אקדמי ראשון', 'השכלה תיכונית עם תעודת בגרות מלאה', 'תואר אקדמי שני ומעלה', 'השכלה על-תיכונית'];
+  const tongues = ['עברית', 'עברית', 'עברית', 'עברית', 'ערבית', 'רוסית', 'אנגלית'];
+
+  let seed = 42;
+  function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+  function rndInt(min, max) { return Math.floor(rnd() * (max - min + 1)) + min; }
+  function sample(arr) { return arr[Math.floor(rnd() * arr.length)]; }
+
+  for (let i = 1; i <= pCount; i++) {
+    const pid = `ACME-P${String(i).padStart(2, '0')}`;
+    const age = rndInt(19, 62);
+    const gender = sample(genders);
+    const edu = sample(edus);
+    const tongue = sample(tongues);
+    const hasAdd = tongue === 'עברית' ? (rnd() > 0.3 ? 'כן' : 'לא') : 'כן';
+    const addLangData = hasAdd === 'כן' ? (tongue === 'עברית' ? 'אנגלית (Prof: 7/10)' : 'עברית (Prof: 9/10)') : '';
+    const baseFactor = 0.85 + rnd() * 0.3;
+
+    for (let pt = 1; pt <= 6; pt++) {
+      const isCong = pt % 2 === 1;
+      const w = sample(words);
+      const ink = isCong ? w : sample(words.filter(x => x !== w));
+      const isAcc = rnd() > 0.15;
+      const rt = Math.round((isCong ? 3800 : 4500) * baseFactor + rnd() * 800);
+      trials.push({
+        participant_id: pid, age, gender, education_years: edu, mother_tongue: tongue,
+        has_add_lang: hasAdd, additional_languages_data: addLangData,
+        is_task: false, trial_number: pt, block_trial_number: pt,
+        condition: isCong ? 'congruent' : 'incongruent',
+        displayed_word: w, ink_color: ink,
+        user_input: isAcc ? ink : sample(words.filter(x => x !== ink)),
+        accuracy: isAcc, rt_ms: rt,
+        timestamp_iso: new Date(1784900000000 + i * 3600000 + pt * 5000).toISOString()
+      });
+    }
+
+    const conditions = [];
+    for (let c = 0; c < 30; c++) conditions.push('congruent');
+    for (let inc = 0; inc < 30; inc++) conditions.push('incongruent');
+    for (let s = conditions.length - 1; s > 0; s--) {
+      const j = Math.floor(rnd() * (s + 1));
+      [conditions[s], conditions[j]] = [conditions[j], conditions[s]];
+    }
+
+    conditions.forEach((cond, idx) => {
+      const isCong = cond === 'congruent';
+      const w = sample(words);
+      const ink = isCong ? w : sample(words.filter(x => x !== w));
+      const isTimeout = rnd() < 0.01;
+      const isCorrect = !isTimeout && (rnd() < (isCong ? 0.975 : 0.94));
+      const baseRt = isCong ? 612 : 738;
+      const fatigue = idx * 0.6;
+      const noise = (rnd() - 0.5) * 160;
+      const rt = isTimeout ? 2000 : Math.round(Math.max(380, (baseRt + fatigue + noise) * baseFactor));
+
+      trials.push({
+        participant_id: pid, age, gender, education_years: edu, mother_tongue: tongue,
+        has_add_lang: hasAdd, additional_languages_data: addLangData,
+        is_task: true, trial_number: idx + 1, block_trial_number: idx + 1,
+        condition: cond, displayed_word: w, ink_color: ink,
+        user_input: isTimeout ? 'timeout' : (isCorrect ? ink : sample(words.filter(x => x !== ink))),
+        accuracy: isCorrect, rt_ms: isTimeout ? null : rt,
+        timestamp_iso: new Date(1784900000000 + i * 3600000 + 60000 + idx * 2500).toISOString()
+      });
+    });
+  }
+
+  return trials;
+}
+
 async function loadAllTrials() {
   const files = []; let token;
   do {
@@ -52,6 +122,22 @@ async function loadAllTrials() {
     } catch(e) { console.warn('load fail', key, e.message); }
   }));
   return all;
+}
+
+async function getDatasetByMode(key) {
+  const mode = key === 'acme' ? 'acme' : (key === 'testing' || key === ADMIN_KEY) ? 'testing' : 'organic';
+  if (mode === 'acme') return { mode, trials: generateAcmeTrials() };
+
+  const all = await loadAllTrials();
+  if (mode === 'testing') return { mode, trials: all };
+
+  // Organic mode: filter out developer test PIDs
+  const organic = all.filter(t => {
+    const pid = String(t.participant_id || '').toUpperCase();
+    return !pid.startsWith('TEST') && !pid.includes('LIVE-DOMAIN');
+  });
+
+  return { mode, trials: organic };
 }
 
 function toPsyRow(t) {
@@ -79,32 +165,29 @@ async function handleSubmit(body) {
   return { statusCode:200, headers:{'Content-Type':'application/json'}, body:JSON.stringify({ ok:true, saved:trials.length }) };
 }
 
-async function handleAdmin(key) {
-  if (key !== ADMIN_KEY) return { statusCode:403, headers:{'Content-Type':'text/html'}, body:`<h1>403 Unauthorized</h1>` };
-  const trials = await loadAllTrials();
-  return { statusCode:200, headers:{'Content-Type':'text/html; charset=utf-8'}, body: adminHtml(key, trials) };
+async function handleAnalytics(key) {
+  const { mode, trials } = await getDatasetByMode(key);
+  return { statusCode:200, headers:{'Content-Type':'text/html; charset=utf-8'}, body: analyticsHtml(mode, trials) };
 }
 
 async function handleCsv(key) {
-  if (key !== ADMIN_KEY) return { statusCode:403, body:'Unauthorized.' };
-  const trials = await loadAllTrials();
-  const rows   = trials.map(t => CSV_HEADERS.map(h => csvCell(t[h])).join(',')).join('\r\n');
-  const csv    = '\uFEFF' + CSV_HEADERS.join(',') + '\r\n' + rows + '\r\n';
-  return { statusCode:200, headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="stroop_results_${new Date().toISOString().slice(0,10)}.csv"`}, body:Buffer.from(csv,'utf8').toString('base64'), isBase64Encoded:true };
+  const { mode, trials } = await getDatasetByMode(key);
+  const rows = trials.map(t => CSV_HEADERS.map(h => csvCell(t[h])).join(',')).join('\r\n');
+  const csv  = '\uFEFF' + CSV_HEADERS.join(',') + '\r\n' + rows + '\r\n';
+  return { statusCode:200, headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="stroop_results_${mode}_${new Date().toISOString().slice(0,10)}.csv"`}, body:Buffer.from(csv,'utf8').toString('base64'), isBase64Encoded:true };
 }
 
 async function handlePsyToolkit(key) {
-  if (key !== ADMIN_KEY) return { statusCode:403, body:'Unauthorized.' };
-  const trials = await loadAllTrials();
-  const byPid  = {};
+  const { mode, trials } = await getDatasetByMode(key);
+  const byPid = {};
   trials.forEach(t => { const p = t.participant_id||'unknown'; (byPid[p]=byPid[p]||[]).push(t); });
   const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','additional_languages_data','stroop'];
-  const rows  = Object.entries(byPid).map(([p,pts]) => [esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),esc(String(pts[0].age||'')),esc(pts[0].gender||''),esc(pts[0].gender_other||''),esc(String(pts[0].education_years||'')),esc(pts[0].mother_tongue||''),esc(pts[0].has_add_lang||''),esc(pts[0].additional_languages_data||''),esc(`${p}.txt`)].join(','));
-  const csv   = [hdrs.join(','),...rows].join('\r\n') + '\r\n';
-  const zip   = new AdmZip();
+  const rows = Object.entries(byPid).map(([p,pts]) => [esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),esc(String(pts[0].age||'')),esc(pts[0].gender||''),esc(pts[0].gender_other||''),esc(String(pts[0].education_years||'')),esc(pts[0].mother_tongue||''),esc(pts[0].has_add_lang||''),esc(pts[0].additional_languages_data||''),esc(`${p}.txt`)].join(','));
+  const csv  = [hdrs.join(','),...rows].join('\r\n') + '\r\n';
+  const zip  = new AdmZip();
   zip.addFile('data.csv', Buffer.from(csv,'utf8'));
   Object.entries(byPid).forEach(([p,pts]) => zip.addFile(`stroop/${p}.txt`, Buffer.from(pts.map(toPsyRow).join('\n')+'\n','utf8')));
-  return { statusCode:200, headers:{'Content-Type':'application/zip','Content-Disposition':`attachment; filename="psytoolkit_stroop_${new Date().toISOString().slice(0,10)}.zip"`}, body:zip.toBuffer().toString('base64'), isBase64Encoded:true };
+  return { statusCode:200, headers:{'Content-Type':'application/zip','Content-Disposition':`attachment; filename="psytoolkit_stroop_${mode}_${new Date().toISOString().slice(0,10)}.zip"`}, body:zip.toBuffer().toString('base64'), isBase64Encoded:true };
 }
 
 exports.handler = async (event) => {
@@ -116,10 +199,10 @@ exports.handler = async (event) => {
   try {
     if (method === 'OPTIONS') return { statusCode:204, headers:cors };
     let r;
-    if (method==='POST' && path.startsWith('/api/submit'))          r = await handleSubmit(event.body);
-    else if (method==='GET' && path==='/admin/download-psytoolkit') r = await handlePsyToolkit(query.key);
-    else if (method==='GET' && path==='/admin/download')            r = await handleCsv(query.key);
-    else if (method==='GET' && path.startsWith('/admin'))           r = await handleAdmin(query.key);
+    if (method==='POST' && path.startsWith('/api/submit'))                      r = await handleSubmit(event.body);
+    else if (method==='GET' && (path==='/analytics/download-psytoolkit' || path==='/admin/download-psytoolkit')) r = await handlePsyToolkit(query.key);
+    else if (method==='GET' && (path==='/analytics/download' || path==='/admin/download'))                     r = await handleCsv(query.key);
+    else if (method==='GET' && (path.startsWith('/analytics') || path.startsWith('/admin')))                   r = await handleAnalytics(query.key);
     else r = { statusCode:404, body:'Not found.' };
     return { ...r, headers:{ ...cors, ...(r.headers||{}) } };
   } catch(e) {
@@ -128,7 +211,7 @@ exports.handler = async (event) => {
   }
 };
 
-function adminHtml(key, trials) {
+function analyticsHtml(mode, trials) {
   const all = (trials || []).map(t => ({
     pid: t.participant_id,
     age: t.age,
@@ -200,18 +283,21 @@ function adminHtml(key, trials) {
 
   const recent = all.slice(-10).reverse();
 
+  const modeTitle = mode === 'acme' ? '🔬 ACME Benchmark Simulation (N=48)' : mode === 'testing' ? '🛠️ Developer Testing Runs' : '🌐 Organic Audience Data';
+  const modeDesc  = mode === 'acme' ? 'Pre-seeded realistic Stroop Effect literature simulation modeling published benchmark metrics' : mode === 'testing' ? 'Contains all developer testing & verification sessions' : 'Live participant submissions collected from organic experiment traffic';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Stroop Research Analytics</title>
+  <title>Stroop Research Analytics — ${modeTitle}</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:32px 20px;line-height:1.5}
     .wrap{max-width:1100px;margin:0 auto}
-    .header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:32px}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px}
     h1{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#e8eaf0,#7c9ef5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
     .sub{color:#8b8fa8;font-size:.9rem}
     .dl-btns{display:flex;gap:12px;flex-wrap:wrap}
@@ -219,6 +305,13 @@ function adminHtml(key, trials) {
     .btn-blue{background:linear-gradient(135deg,#5a7de0,#7c9ef5);color:#fff;box-shadow:0 4px 20px rgba(124,158,245,.3)}
     .btn-green{background:linear-gradient(135deg,#2db87a,#1a9e65);color:#fff;box-shadow:0 4px 20px rgba(45,184,122,.3)}
     .btn:hover{transform:translateY(-2px)}
+    
+    /* Dataset Switcher Tabs */
+    .tabs-bar{display:flex;background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:6px;gap:6px;margin-bottom:28px;overflow-x:auto}
+    .tab-btn{flex:1;min-width:180px;text-align:center;padding:10px 16px;border-radius:10px;font-size:.88rem;font-weight:600;color:#8b8fa8;text-decoration:none;transition:all .2s;white-space:nowrap}
+    .tab-btn:hover{color:#e8eaf0;background:rgba(255,255,255,.04)}
+    .tab-btn.active{background:linear-gradient(135deg,#5a7de0,#7c9ef5);color:#fff;box-shadow:0 4px 16px rgba(124,158,245,.3)}
+
     .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:28px}
     .card{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:22px}
     .card-title{font-size:.82rem;font-weight:600;color:#8b8fa8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
@@ -248,12 +341,19 @@ function adminHtml(key, trials) {
     <div class="header">
       <div>
         <h1>🧠 Stroop Research & Cognitive Analytics</h1>
-        <p class="sub">Real-time Stroop Effect calculation, participant metrics, & PsyToolkit data exports</p>
+        <p class="sub">${modeDesc}</p>
       </div>
       <div class="dl-btns">
-        <a class="btn btn-blue" href="/admin/download?key=${key}">⬇ Full CSV (${totalReal})</a>
-        <a class="btn btn-green" href="/admin/download-psytoolkit?key=${key}">🧪 PsyToolkit ZIP</a>
+        <a class="btn btn-blue" href="/analytics/download?key=${mode}">⬇ Full CSV (${totalReal})</a>
+        <a class="btn btn-green" href="/analytics/download-psytoolkit?key=${mode}">🧪 PsyToolkit ZIP</a>
       </div>
+    </div>
+
+    <!-- Dataset Selector Bar -->
+    <div class="tabs-bar">
+      <a class="tab-btn ${mode === 'organic' ? 'active' : ''}" href="/analytics?key=organic">🌐 Organic Audience Data</a>
+      <a class="tab-btn ${mode === 'acme' ? 'active' : ''}" href="/analytics?key=acme">🔬 ACME Research Benchmark (N=48 Simulation)</a>
+      <a class="tab-btn ${mode === 'testing' ? 'active' : ''}" href="/analytics?key=testing">🛠️ Developer Testing Runs</a>
     </div>
 
     <div class="kpi-grid">
@@ -265,8 +365,8 @@ function adminHtml(key, trials) {
 
     ${latest ? `
     <div class="insights-card">
-      <span class="badge-tag">VERIFIED SESSION · ${latest.pid}</span>
-      <div class="insights-title">🔍 Detailed Cognitive Analysis for Session: <code>${latest.pid}</code></div>
+      <span class="badge-tag">${mode === 'acme' ? 'BENCHMARK MODEL' : 'ACTIVE SESSION'} · ${latest.pid}</span>
+      <div class="insights-title">🔍 Cognitive & Demographic Profile: <code>${latest.pid}</code></div>
       <div class="insights-grid">
         <div class="insight-item">
           <strong>👤 Participant Demographics:</strong><br>
@@ -278,7 +378,7 @@ function adminHtml(key, trials) {
           <strong>⚡ Cognitive Performance:</strong><br>
           • Congruent Mean RT: <strong>${latest.cRt} ms</strong><br>
           • Incongruent Mean RT: <strong>${latest.iRt} ms</strong><br>
-          • <strong>Stroop Effect: <span style="color:#a78bfa">+${latest.effect} ms</span></strong> (Cognitive Interference)
+          • <strong>Stroop Effect: <span style="color:#a78bfa">+${latest.effect} ms</span></strong> (Interference Delta)
         </div>
         <div class="insight-item">
           <strong>🎯 Accuracy & Learning:</strong><br>
@@ -301,13 +401,13 @@ function adminHtml(key, trials) {
       </div>
     </div>
 
-    <div class="section-title">👥 Participant Performance Summary</div>
+    <div class="section-title">👥 Participant Performance Summary (${pSummaries.length})</div>
     <table>
       <thead>
         <tr><th>ID</th><th>Age / Gender</th><th>Education</th><th>Trials</th><th>Congruent RT</th><th>Incongruent RT</th><th>Stroop Effect</th><th>Accuracy</th></tr>
       </thead>
       <tbody>
-        ${pSummaries.map(p => `<tr><td><code>${p.pid}</code></td><td>${p.age} / ${p.gender}</td><td>${p.edu}</td><td>${p.totalReal}</td><td>${p.cRt} ms</td><td>${p.iRt} ms</td><td><strong style="color:${p.effect > 0 ? '#a78bfa' : '#52b46b'}">${p.effect > 0 ? '+' : ''}${p.effect} ms</strong></td><td><span class="badge-ok">${p.acc}%</span></td></tr>`).join('')}
+        ${pSummaries.slice(0, 50).map(p => `<tr><td><code>${p.pid}</code></td><td>${p.age} / ${p.gender}</td><td>${p.edu}</td><td>${p.totalReal}</td><td>${p.cRt} ms</td><td>${p.iRt} ms</td><td><strong style="color:${p.effect > 0 ? '#a78bfa' : '#52b46b'}">${p.effect > 0 ? '+' : ''}${p.effect} ms</strong></td><td><span class="badge-ok">${p.acc}%</span></td></tr>`).join('')}
       </tbody>
     </table>
 

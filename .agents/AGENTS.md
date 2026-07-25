@@ -11,7 +11,8 @@ This repository contains a full-stack Stroop Task web application for psychologi
 ## Token & Cost Optimization Guidelines for AI Coding Agents
 1. **Never read `node_modules` or `lambda/node_modules`**: Rely on package manifests (`package.json`) and specific source files.
 2. **Concise file viewing**: Avoid fetching whole large files if line ranges suffice.
-3. **Documentation Sync**: Keep `instructions.md` updated whenever UI flow, architecture, or endpoints change.
-4. **Deploy Scripts**:
-   - Static frontend: `./scripts/deploy.sh`
-   - Backend Lambda: `./scripts/deploy-lambda.sh`
+## Knowledge Catalog & Open Knowledge Format (OKF)
+5. **Check OKF Specifications (`.agents/okf/`)**: Before planning major features, infrastructure changes, or data transformations, inspect the YAML-frontmatter Markdown specifications in `.agents/okf/`:
+   - `.agents/okf/stroop_architecture.md`: Canonical AWS architecture and infrastructure map.
+   - `.agents/okf/psytoolkit_export_spec.md`: Dataset schema and PsyToolkit export mapping rules.
+

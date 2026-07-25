@@ -1,9 +1,10 @@
 /* ─────────────────────────────────────────
    STROOP TASK — EXPRESS SERVER
    - Serves static files
-   - POST /api/submit  : appends participant data to data/results.csv
-   - GET  /admin       : password-protected admin dashboard
-   - GET  /admin/download : serves the full CSV to the researcher
+   - POST /api/submit              : appends participant data to data/results.csv
+   - GET  /admin                   : password-protected admin dashboard
+   - GET  /admin/download          : serves the full CSV to the researcher
+   - GET  /admin/download-psytoolkit : ZIP in PsyToolkit-compatible format
 ───────────────────────────────────────── */
 
 'use strict';
@@ -11,6 +12,7 @@
 const express  = require('express');
 const fs       = require('fs');
 const path     = require('path');
+const AdmZip = require('adm-zip');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -33,7 +35,7 @@ const CSV_HEADERS = [
   'mother_tongue',
   'has_add_lang',
   'additional_languages_data',
-  'is_practice',
+  'is_task',
   'trial_number',
   'block_trial_number',
   'condition',
@@ -142,6 +144,147 @@ app.get('/admin/download', (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+//  GET /admin/download-psytoolkit?key=...
+//  Generates a ZIP file that mirrors PsyToolkit's survey+experiment export:
+//
+//  psytoolkit_stroop_YYYY-MM-DD.zip
+//  ├── data.csv              ← one row per participant (demographics)
+//  └── stroop/
+//      ├── <participant_id>.txt   ← space-separated trial rows per participant
+//      └── ...
+//
+//  Per-participant .txt format (4 space-separated columns):
+//    col1: block_type  (1=practice, 2=real)
+//    col2: condition   (1=congruent, 2=incongruent)
+//    col3: STATUS      (1=correct, 2=wrong, 3=timeout)
+//    col4: RT          (integer ms; 0 on timeout)
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/admin/download-psytoolkit', (req, res) => {
+  if (req.query.key !== ADMIN_KEY) {
+    return res.status(403).send('Unauthorized.');
+  }
+
+  // ── Parse the CSV into trial records ────────────────────────────────────
+  // Proper RFC-4180-aware CSV parser (handles commas inside quoted fields)
+  function parseCSVLine(line) {
+    const fields = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQ) {
+        if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (ch === '"')                    { inQ = false; }
+        else                                    { cur += ch; }
+      } else {
+        if (ch === '"')  { inQ = true; }
+        else if (ch === ',') { fields.push(cur); cur = ''; }
+        else               { cur += ch; }
+      }
+    }
+    fields.push(cur);
+    return fields;
+  }
+
+  let trials = [];
+  try {
+    const raw   = fs.readFileSync(CSV_FILE, 'utf8');
+    const lines = raw.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) {
+      return res.status(404).send('No data yet.');
+    }
+    const headers = parseCSVLine(lines[0].replace(/^\uFEFF/, ''));
+    trials = lines.slice(1).map(line => {
+      const vals = parseCSVLine(line);
+      const obj  = {};
+      headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+      return obj;
+    });
+  } catch (err) {
+    console.error('[PSYTOOLKIT DL] CSV read error:', err);
+    return res.status(500).send('Error reading data.');
+  }
+
+  // ── Group trials by participant_id ───────────────────────────────────────
+  const byParticipant = {};
+  trials.forEach(t => {
+    const pid = t.participant_id || 'unknown';
+    if (!byParticipant[pid]) byParticipant[pid] = [];
+    byParticipant[pid].push(t);
+  });
+
+  // ── Helper: map one trial row → PsyToolkit space-separated string ────────
+  function toPsyRow(t) {
+    const blockType = t.is_task === 'true' ? 2 : 1;
+    const condition = t.condition === 'congruent' ? 1 : 2;
+    const status    = t.user_input === 'timeout' ? 3
+                    : t.accuracy === 'true'      ? 1 : 2;
+    const rt        = t.rt_ms && t.rt_ms !== 'null'
+                    ? Math.round(parseFloat(t.rt_ms))
+                    : 0;
+    return `${blockType} ${condition} ${status} ${rt}`;
+  }
+
+  // ── Build data.csv content (demographics, one row per participant) ────────
+  const surveyHeaders = [
+    'participant', 'start_time', 'end_time',
+    'age', 'gender', 'gender_other', 'education_years',
+    'mother_tongue', 'has_add_lang', 'additional_languages_data',
+    'stroop',
+  ];
+
+  const surveyRows = Object.entries(byParticipant).map(([pid, pts]) => {
+    const first = pts[0];
+    const last  = pts[pts.length - 1];
+    const esc   = v => (v && (v.includes(',') || v.includes('"')))
+                     ? `"${v.replace(/"/g, '""')}"`
+                     : (v || '');
+    return [
+      esc(pid),
+      esc(first.timestamp_iso || ''),
+      esc(last.timestamp_iso  || ''),
+      esc(first.age           || ''),
+      esc(first.gender        || ''),
+      esc(first.gender_other  || ''),
+      esc(first.education_years || ''),
+      esc(first.mother_tongue   || ''),
+      esc(first.has_add_lang    || ''),
+      esc(first.additional_languages_data || ''),
+      esc(`${pid}.txt`),
+    ].join(',');
+  });
+
+  const dataCsvContent = [surveyHeaders.join(','), ...surveyRows].join('\r\n') + '\r\n';
+
+  // ── Build and send ZIP ─────────────────────────────────────────────────────
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const zipName = `psytoolkit_stroop_${dateStr}.zip`;
+
+  try {
+    const zip = new AdmZip();
+
+    // data.csv
+    zip.addFile('data.csv', Buffer.from(dataCsvContent, 'utf8'));
+
+    // stroop/<pid>.txt — one file per participant
+    Object.entries(byParticipant).forEach(([pid, pts]) => {
+      const rows = pts.map(toPsyRow).join('\n') + '\n';
+      zip.addFile(`stroop/${pid}.txt`, Buffer.from(rows, 'utf8'));
+    });
+
+    const zipBuffer = zip.toBuffer();
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
+    res.setHeader('Content-Length', zipBuffer.length);
+    res.send(zipBuffer);
+
+    console.log(`[PSYTOOLKIT] ZIP sent: ${zipName} (${Object.keys(byParticipant).length} participants)`);
+  } catch (err) {
+    console.error('[PSYTOOLKIT ZIP ERROR]', err);
+    res.status(500).send('Error building ZIP.');
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 //  HTML page builders
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -168,8 +311,11 @@ function adminPage({ key, totalRows, participants, lastLines }) {
     .stat{background:#1a1d26;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:24px;text-align:center}
     .stat-val{font-size:2.4rem;font-weight:800;color:#6b8aff}
     .stat-lbl{font-size:.8rem;color:#8b8fa8;margin-top:4px}
-    .dl-btn{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#6b8aff,#8b5cf6);color:#fff;border:none;border-radius:50px;padding:14px 32px;font-size:1.05rem;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:36px;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 24px rgba(107,138,255,.35)}
+    .dl-btn{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#6b8aff,#8b5cf6);color:#fff;border:none;border-radius:50px;padding:14px 32px;font-size:1.05rem;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:12px;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 24px rgba(107,138,255,.35)}
     .dl-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(107,138,255,.5)}
+    .dl-btn.psy{background:linear-gradient(135deg,#2db87a,#1a9e65);box-shadow:0 4px 24px rgba(45,184,122,.35);margin-bottom:36px}
+    .dl-btn.psy:hover{box-shadow:0 8px 32px rgba(45,184,122,.5)}
+    .dl-btns{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:36px}
     table{width:100%;border-collapse:collapse;background:#1a1d26;border-radius:14px;overflow:hidden;font-size:.82rem}
     th{background:#20232f;color:#8b8fa8;font-weight:600;padding:10px 14px;text-align:left}
     td{padding:9px 14px;border-top:1px solid rgba(255,255,255,.05);color:#c5c8d8;font-family:'Courier New',monospace}
@@ -197,9 +343,17 @@ function adminPage({ key, totalRows, participants, lastLines }) {
       </div>
     </div>
 
-    <a class="dl-btn" href="/admin/download?key=${key}">
-      ⬇ Download Full CSV (${totalRows} rows)
-    </a>
+    <div class="dl-btns">
+      <a class="dl-btn" href="/admin/download?key=${key}">
+        ⬇ Download Full CSV (${totalRows} rows)
+      </a>
+      <a class="dl-btn psy" href="/admin/download-psytoolkit?key=${key}">
+        🧪 Download PsyToolkit ZIP
+      </a>
+    </div>
+    <p style="font-size:.8rem;color:#8b8fa8;margin-top:-28px;margin-bottom:28px">
+      PsyToolkit ZIP — compatible with <code>psytkReadData()</code> in R. Drop the ZIP folder into your analysis directory.
+    </p>
 
     <h2 style="font-size:1rem;color:#8b8fa8;margin-bottom:12px;font-weight:600">LAST SUBMISSIONS</h2>
     <table>

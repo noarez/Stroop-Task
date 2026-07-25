@@ -1,137 +1,102 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#111318" />
+  <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#eef1f9" media="(prefers-color-scheme: light)" />
+  <meta name="description" content="מחקר מטלת סטרופ — בדיקת תפקודים ניהוליים וזמן תגובה קוגניטיבי" />
   <title>מטלת סטרופ | Stroop Task</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+
+  <!-- ── Story Progress Bar (shown on demographics) ── -->
+  <div class="story-bar-container" id="story-bar-container">
+    <div class="story-bar-fill" id="story-bar-fill"></div>
+  </div>
+
+  <!-- ── Step Label Bar (back button + step count) ── -->
+  <div class="step-label-bar" id="step-label-bar">
+    <button class="step-back-btn" id="step-back-btn" onclick="wizardBack()" aria-label="חזור לשאלה הקודמת">
+      ← חזור
+    </button>
+    <span class="step-text" id="step-text-label">שאלה 1 מתוך 5</span>
+  </div>
 
   <!-- ══════════════════════ SCREEN 0: INTRO / CONSENT ══════════════════════ -->
   <div id="screen-intro" class="screen active">
     <div class="card wide-card">
       <div class="logo-badge">🔬</div>
       <h1>ברוכים הבאים למחקר</h1>
-      <p class="subtitle">הסבר קצר על המחקר</p>
+      <p class="subtitle">קראו בעיון לפני שממשיכים</p>
       <div class="divider"></div>
 
-      <div class="instructions-block">
-        <p style="margin-bottom: 12px;"><strong>משתתף/ת יקר/ה!</strong><br>
-        שלום לכולם, אנחנו אלה גולדברג ונועה רזניק סטודנטיות לפסיכולוגיה, שאלון זה מועבר במסגרת עבודה סמינריונית לתואר ראשון (BA) בפסיכולוגיה.</p>
-
-        <p style="margin-bottom: 12px;">המחקר עוסק בקשר בין רקע אישי ומאפיינים דמוגרפיים לבין תפקודים ניהוליים.</p>
-
-        <p style="margin-bottom: 12px;">אודה לך אם תסכים/י להשתתף במחקר שלנו ותסייע/י בהשיבך על השאלות השונות. לתשומת לבך ההשתתפות במחקר הינה אנונימית, המידע שיימסר ישמש לצורכי מחקר ולא יועבר לגורם אחר. כמו כן, חשוב לענות על כל השאלות. השאלות מבטאות את דעתך האישית.</p>
-
-        <p style="margin-bottom: 12px;">אציין, כי אם הינך מרגיש/ה אי נוחות, אינך חייב/ת לסיים את המחקר ויכול/ה לפרוש בכל עת.</p>
-
-        <p style="margin-bottom: 12px;">נשמח לעמוד לעזרתכם, בכל שאלה או פניה.<br>
-        מייל אישי : noa.rez@gmail.com, ellagold283@gmail.com<br>
-        מספר טל' : 054-9989598, 054-7805806</p>
-
-        <p style="margin-bottom: 24px;">בברכה,<br>אלה ונועה.</p>
+      <!-- Privacy chip -->
+      <div style="display:flex; justify-content:center; margin-bottom:20px;">
+        <div class="privacy-chip">🔒 אנונימי וסודי לחלוטין</div>
       </div>
 
-      <button class="btn btn-primary" onclick="showScreen('screen-demographics')">
-        הבא
+      <!-- Full research text block -->
+      <div class="consent-text-block">
+        <p><strong>משתתף/ת יקר/ה!</strong><br>
+        שלום לכולם, אנחנו אלה גולדברג ונועה רזניק סטודנטיות לפסיכולוגיה, שאלון זה מועבר במסגרת עבודה סמינריונית לתואר ראשון (BA) בפסיכולוגיה.</p>
+
+        <p>המחקר עוסק בקשר בין רקע אישי ומאפיינים דמוגרפיים לבין תפקודים ניהוליים.</p>
+
+        <p>נודה לך אם תסכים/י להשתתף במחקר שלנו ותסייע/י בהשיבך על השאלות השונות. לתשומת לבך ההשתתפות במחקר הינה <strong>אנונימית</strong>, המידע שיימסר ישמש לצורכי מחקר ולא יועבר לגורם אחר. כמו כן, חשוב לענות על כל השאלות. השאלות מבטאות את דעתך האישית.</p>
+
+        <p>נציין, כי אם הינך מרגיש/ה אי נוחות, אינך חייב/ת לסיים את המחקר ויכול/ה לפרוש בכל עת.</p>
+      </div>
+
+      <!-- Collapsible contact details only -->
+      <div class="accordion" style="margin-bottom: 24px;">
+        <div class="accordion-item" id="acc-contact">
+          <button class="accordion-toggle" onclick="toggleAccordion('acc-contact')" aria-expanded="false">
+            <span>📞 פרטי יצירת קשר</span>
+            <span class="accordion-icon">▼</span>
+          </button>
+          <div class="accordion-body">
+            <div class="accordion-content">
+              <p>נשמח לעמוד לעזרתכם בכל שאלה או פניה:</p>
+              <p>
+                <strong>אלה גולדברג</strong> — ellagold283@gmail.com · 054-7805806<br>
+                <strong>נועה רזניק</strong> — noa.rez@gmail.com · 054-9989598
+              </p>
+              <p>בברכה,<br>אלה ונועה.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-to-demographics" onclick="startDemographicsWizard()">
+        מסכים/ה ומתחיל/ה
         <span class="btn-arrow">←</span>
       </button>
     </div>
   </div>
 
-  <!-- ══════════════════════ SCREEN 1: DEMOGRAPHICS ══════════════════════ -->
+  <!-- ══════════════════════ SCREEN 1: DEMOGRAPHICS WIZARD ══════════════════════ -->
   <div id="screen-demographics" class="screen">
     <div class="card wide-card">
-      <div class="logo-badge">📋</div>
-      <h1>פרטים אישיים</h1>
-      <p class="subtitle">אנא מלאו את הפרטים הבאים</p>
-      <div class="divider"></div>
 
-      <div class="instructions-block">
-        <form id="demographics-form" onsubmit="submitDemographics(event)">
-          <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
-            <label for="demo-age" style="font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-              <span>גיל:</span>
-              <span id="demo-age-val" style="color: var(--accent); font-size: 1.4rem; font-weight: 800; background: var(--bg-card2); padding: 4px 16px; border-radius: 8px; border: 1px solid var(--border);">25</span>
-            </label>
-            <input type="range" id="demo-age" required min="18" max="120" value="25" class="styled-slider" oninput="document.getElementById('demo-age-val').textContent = this.value">
-          </div>
-
-          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label style="font-weight: bold; margin-bottom: 4px;">מגדר:</label>
-            <div class="button-group">
-              <label class="btn-radio">
-                <input type="radio" name="demo-gender" value="זכר" required onchange="toggleGenderOther()">
-                <span style="font-size: 1.6rem; padding: 6px 0;" aria-label="זכר" title="זכר">👨</span>
-              </label>
-              <label class="btn-radio">
-                <input type="radio" name="demo-gender" value="נקבה" required onchange="toggleGenderOther()">
-                <span style="font-size: 1.6rem; padding: 6px 0;" aria-label="נקבה" title="נקבה">👩</span>
-              </label>
-              <label class="btn-radio">
-                <input type="radio" name="demo-gender" value="אחר" required onchange="toggleGenderOther()">
-                <span style="font-size: 1.6rem; padding: 6px 0;" aria-label="אחר" title="אחר">⚧️</span>
-              </label>
-            </div>
-          </div>
-          <div id="demo-gender-other-wrap" style="margin-bottom: 12px; display: none; flex-direction: column;">
-            <label for="demo-gender-other" style="font-weight: bold; margin-bottom: 4px;">פרט/י מגדר:</label>
-            <input type="text" id="demo-gender-other" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
-          </div>
-
-          <div style="margin-bottom: 24px; display: flex; flex-direction: column;">
-            <label for="demo-education" style="font-weight: bold; margin-bottom: 8px;">השכלה:</label>
-            <select id="demo-education" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
-              <option value="" disabled selected>בחר/י...</option>
-              <option value="השכלה יסודית / חלקית">השכלה יסודית / חלקית</option>
-              <option value="השכלה תיכונית ללא תעודת בגרות">השכלה תיכונית ללא תעודת בגרות</option>
-              <option value="השכלה תיכונית עם תעודת בגרות מלאה">השכלה תיכונית עם תעודת בגרות מלאה</option>
-              <option value="השכלה על-תיכונית">השכלה על-תיכונית</option>
-              <option value="תואר אקדמי ראשון">תואר אקדמי ראשון</option>
-              <option value="תואר אקדמי שני ומעלה">תואר אקדמי שני ומעלה</option>
-            </select>
-          </div>
-
-          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label for="demo-mother-tongue" style="font-weight: bold; margin-bottom: 4px;">מהי שפת האם שלך?</label>
-            <input type="text" id="demo-mother-tongue" required style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card2); color: var(--text);">
-          </div>
-
-          <div style="margin-bottom: 12px; display: flex; flex-direction: column;">
-            <label style="font-weight: bold; margin-bottom: 4px;">האם אתה דובר שפות נוספות?</label>
-            <div class="button-group">
-              <label class="btn-radio">
-                <input type="radio" name="demo-has-add-lang" value="כן" required onchange="toggleAddLang()">
-                <span>כן</span>
-              </label>
-              <label class="btn-radio">
-                <input type="radio" name="demo-has-add-lang" value="לא" required onchange="toggleAddLang()">
-                <span>לא</span>
-              </label>
-            </div>
-          </div>
-          <div id="demo-add-lang-wrap" style="display: none; flex-direction: column; gap: 16px; margin-bottom: 24px;">
-            <div id="languages-container" style="display: flex; flex-direction: column; gap: 16px;"></div>
-            <button type="button" class="btn" style="background: var(--bg-card2); color: var(--text); border: 1px dashed var(--border);" onclick="addLanguageBlock()">+ הוסף שפה נוספת</button>
-          </div>
-
-          <button type="submit" class="btn btn-primary" style="margin-top: 12px;">
-            המשך
-            <span class="btn-arrow">←</span>
-          </button>
-        </form>
+      <!-- Wizard slide host — JS injects question slides here -->
+      <div class="wizard-slide-host" id="wizard-slide-host">
+        <!-- Dynamically rendered by app.js -->
       </div>
+
     </div>
   </div>
 
-  <!-- ══════════════════════ SCREEN 1: ONBOARDING ══════════════════════ -->
+  <!-- ══════════════════════ SCREEN 2: ONBOARDING ══════════════════════ -->
   <div id="screen-onboarding" class="screen">
     <div class="card wide-card">
       <div class="logo-badge">🧠</div>
@@ -157,12 +122,13 @@
         <div class="info-box">
           <span class="info-icon">💡</span>
           <div>
-            <strong>דוגמה:</strong> אם המילה "כחול" כתובה <em>באדום</em> — לחץ על הכפתור <strong style="color:#e05252">אדום</strong>, כי צבע הדיו הוא אדום.
+            <strong>דוגמה:</strong> אם המילה "כחול" כתובה <em>באדום</em> — לחץ על הכפתור <strong
+              style="color:var(--red)">אדום</strong>, כי צבע הדיו הוא אדום.
           </div>
         </div>
 
         <p class="flow-note">
-          ראשית תעבור <strong>שלב תרגול קצר</strong> עם משוב מיידי.
+          ראשית תעבור <strong>שלב תרגול קצר</strong> עם משוב מיידי.<br>
           לאחר מכן תתחיל את <strong>המטלה האמיתית</strong> ללא משוב.
         </p>
       </div>
@@ -174,7 +140,7 @@
     </div>
   </div>
 
-  <!-- ══════════════════════ SCREEN 2: TRIAL (practice & main) ══════════════════════ -->
+  <!-- ══════════════════════ SCREEN 3: TRIAL (practice & main) ══════════════════════ -->
   <div id="screen-trial" class="screen">
     <div class="trial-header">
       <div id="trial-phase-label" class="phase-label">תרגול</div>
@@ -190,13 +156,15 @@
     <!-- stimulus -->
     <div id="stimulus" class="stimulus hidden"></div>
 
-    <!-- feedback (practice only) -->
-    <div id="feedback" class="feedback hidden"></div>
-
-    <!-- countdown bar — shrinks left-to-right over RESPONSE_TIMEOUT_MS -->
+    <!-- countdown bar -->
     <div id="countdown-bar-wrap" class="countdown-bar-wrap hidden">
       <div id="countdown-bar" class="countdown-bar"></div>
     </div>
+
+    <!-- feedback (practice only) -->
+    <div id="feedback" class="feedback hidden"></div>
+
+
 
     <!-- 2×2 clickable color-response buttons -->
     <div class="color-btn-grid response-grid" id="response-buttons">
@@ -205,10 +173,9 @@
       <button class="color-btn" id="btn-color-צהוב" data-color="צהוב">צהוב</button>
       <button class="color-btn" id="btn-color-כחול" data-color="כחול">כחול</button>
     </div>
-
   </div>
 
-  <!-- ══════════════════════ SCREEN 3: TRANSITION ══════════════════════ -->
+  <!-- ══════════════════════ SCREEN 4: TRANSITION ══════════════════════ -->
   <div id="screen-transition" class="screen">
     <div class="card">
       <div class="logo-badge">✅</div>
@@ -222,14 +189,16 @@
           נסה/י להגיב במהירות ובדיוק רב ככל האפשר.
         </div>
       </div>
-      <button id="btn-start-main" class="btn btn-primary" onclick="startMain()">
-        התחלת המטלה
-        <span class="btn-arrow">←</span>
-      </button>
+      <div style="margin-top: 24px;">
+        <button id="btn-start-main" class="btn btn-primary" onclick="startMain()">
+          התחלת המטלה
+          <span class="btn-arrow">←</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- ══════════════════════ SCREEN 4: COMPLETION ══════════════════════ -->
+  <!-- ══════════════════════ SCREEN 5: COMPLETION ══════════════════════ -->
   <div id="screen-complete" class="screen">
     <div class="card">
       <div class="logo-badge">🎉</div>
@@ -248,4 +217,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>

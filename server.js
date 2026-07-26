@@ -24,11 +24,37 @@ const CSV_FILE  = path.join(DATA_DIR, 'results.csv');
 
 const CSV_HEADERS = [
   'participant_id','age','gender','gender_other','education_years',
-  'mother_tongue','has_add_lang','additional_languages_data',
+  'mother_tongue','has_add_lang','amount_of_languages','additional_languages_data',
   'is_task','trial_number','block_trial_number','condition',
   'displayed_word','ink_color','user_input','input_method',
   'accuracy','rt_ms','timestamp_iso',
 ];
+
+const GENDER_MAP = { 'זכר':1, 'נקבה':2, 'אחר':3, 'אחר/מעדיף לא לציין':3 };
+const EDU_MAP = {
+  'השכלה יסודית / חלקית':1, 'השכלה תיכונית ללא תעודת בגרות':2, 'השכלה תיכונית עם תעודת בגרות מלאה':3,
+  'השכלה על-תיכונית':4, 'תואר אקדמי ראשון':5, 'תואר אקדמי שני ומעלה':6
+};
+const TONGUE_MAP = {
+  'עברית':1, 'ערבית':2, 'רוסית':3, 'אנגלית':4, 'אמהרית':5, 'צרפתית':6, 'ספרדית':7, 'אחר':8
+};
+const YES_NO_MAP = { 'כן':1, 'לא':2 };
+
+function mapDemographics(t) {
+  const mapped = { ...t };
+  mapped.gender = GENDER_MAP[t.gender] || t.gender;
+  mapped.education_years = EDU_MAP[t.education_years] || t.education_years;
+  mapped.mother_tongue = TONGUE_MAP[t.mother_tongue] || t.mother_tongue;
+  mapped.has_add_lang = YES_NO_MAP[t.has_add_lang] || t.has_add_lang;
+  let amount = 1;
+  if (t.has_add_lang === 'כן' || mapped.has_add_lang === 1) {
+    if (t.additional_languages_data) {
+      amount += t.additional_languages_data.split('|').length;
+    }
+  }
+  mapped.amount_of_languages = amount;
+  return mapped;
+}
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -209,7 +235,8 @@ app.get(['/analytics', '/admin'], (req, res) => {
 
 app.get(['/analytics/download', '/admin/download'], (req, res) => {
   const { mode, trials } = getLocalDatasetByMode(req.query.key);
-  const rows = trials.map(t => CSV_HEADERS.map(h => csvCell(t[h])).join(',')).join('\r\n');
+  const mappedTrials = trials.map(mapDemographics);
+  const rows = mappedTrials.map(t => CSV_HEADERS.map(h => csvCell(t[h])).join(',')).join('\r\n');
   const csv  = '\uFEFF' + CSV_HEADERS.join(',') + '\r\n' + rows + '\r\n';
   const filename = `stroop_results_${mode}_${new Date().toISOString().slice(0, 10)}.csv`;
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -236,20 +263,24 @@ app.get(['/analytics/download-psytoolkit', '/admin/download-psytoolkit'], (req, 
     return (v.includes(',') || v.includes('"')) ? `"${v.replace(/"/g, '""')}"` : v;
   }
 
-  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','additional_languages_data','stroop'];
-  const rows = Object.entries(byPid).map(([p, pts]) => [
-    escVal(p),
-    escVal(pts[0].timestamp_iso || ''),
-    escVal(pts[pts.length - 1].timestamp_iso || ''),
-    escVal(String(pts[0].age || '')),
-    escVal(pts[0].gender || ''),
-    escVal(pts[0].gender_other || ''),
-    escVal(String(pts[0].education_years || '')),
-    escVal(pts[0].mother_tongue || ''),
-    escVal(pts[0].has_add_lang || ''),
-    escVal(pts[0].additional_languages_data || ''),
-    escVal(`${p}.txt`)
-  ].join(','));
+  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages','additional_languages_data','stroop'];
+  const rows = Object.entries(byPid).map(([p, pts]) => {
+    const t0 = mapDemographics(pts[0]);
+    return [
+      escVal(p),
+      escVal(pts[0].timestamp_iso || ''),
+      escVal(pts[pts.length - 1].timestamp_iso || ''),
+      escVal(String(t0.age || '')),
+      escVal(t0.gender || ''),
+      escVal(t0.gender_other || ''),
+      escVal(String(t0.education_years || '')),
+      escVal(t0.mother_tongue || ''),
+      escVal(t0.has_add_lang || ''),
+      escVal(String(t0.amount_of_languages || '')),
+      escVal(t0.additional_languages_data || ''),
+      escVal(`${p}.txt`)
+    ].join(',');
+  });
 
   const csvContent = [hdrs.join(','), ...rows].join('\r\n') + '\r\n';
   const zipName = `psytoolkit_stroop_${mode}_${new Date().toISOString().slice(0, 10)}.zip`;

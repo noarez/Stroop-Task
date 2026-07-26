@@ -9,11 +9,37 @@ const ADMIN_KEY   = process.env.ADMIN_KEY   || 'stroop_admin_2024';
 
 const CSV_HEADERS = [
   'participant_id','age','gender','gender_other','education_years',
-  'mother_tongue','has_add_lang','additional_languages_data',
+  'mother_tongue','has_add_lang','amount_of_languages','additional_languages_data',
   'is_task','trial_number','block_trial_number','condition',
   'displayed_word','ink_color','user_input','input_method',
   'accuracy','rt_ms','timestamp_iso',
 ];
+
+const GENDER_MAP = { 'זכר':1, 'נקבה':2, 'אחר':3, 'אחר/מעדיף לא לציין':3 };
+const EDU_MAP = {
+  'השכלה יסודית / חלקית':1, 'השכלה תיכונית ללא תעודת בגרות':2, 'השכלה תיכונית עם תעודת בגרות מלאה':3,
+  'השכלה על-תיכונית':4, 'תואר אקדמי ראשון':5, 'תואר אקדמי שני ומעלה':6
+};
+const TONGUE_MAP = {
+  'עברית':1, 'ערבית':2, 'רוסית':3, 'אנגלית':4, 'אמהרית':5, 'צרפתית':6, 'ספרדית':7, 'אחר':8
+};
+const YES_NO_MAP = { 'כן':1, 'לא':2 };
+
+function mapDemographics(t) {
+  const mapped = { ...t };
+  mapped.gender = GENDER_MAP[t.gender] || t.gender;
+  mapped.education_years = EDU_MAP[t.education_years] || t.education_years;
+  mapped.mother_tongue = TONGUE_MAP[t.mother_tongue] || t.mother_tongue;
+  mapped.has_add_lang = YES_NO_MAP[t.has_add_lang] || t.has_add_lang;
+  let amount = 1;
+  if (t.has_add_lang === 'כן' || mapped.has_add_lang === 1) {
+    if (t.additional_languages_data) {
+      amount += t.additional_languages_data.split('|').length;
+    }
+  }
+  mapped.amount_of_languages = amount;
+  return mapped;
+}
 
 function csvCell(val) {
   if (val === null || val === undefined) return '';
@@ -172,7 +198,8 @@ async function handleAnalytics(key) {
 
 async function handleCsv(key) {
   const { mode, trials } = await getDatasetByMode(key);
-  const rows = trials.map(t => CSV_HEADERS.map(h => csvCell(t[h])).join(',')).join('\r\n');
+  const mappedTrials = trials.map(mapDemographics);
+  const rows = mappedTrials.map(t => CSV_HEADERS.map(h => csvCell(t[h])).join(',')).join('\r\n');
   const csv  = '\uFEFF' + CSV_HEADERS.join(',') + '\r\n' + rows + '\r\n';
   return { statusCode:200, headers:{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="stroop_results_${mode}_${new Date().toISOString().slice(0,10)}.csv"`}, body:Buffer.from(csv,'utf8').toString('base64'), isBase64Encoded:true };
 }
@@ -181,8 +208,11 @@ async function handlePsyToolkit(key) {
   const { mode, trials } = await getDatasetByMode(key);
   const byPid = {};
   trials.forEach(t => { const p = t.participant_id||'unknown'; (byPid[p]=byPid[p]||[]).push(t); });
-  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','additional_languages_data','stroop'];
-  const rows = Object.entries(byPid).map(([p,pts]) => [esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),esc(String(pts[0].age||'')),esc(pts[0].gender||''),esc(pts[0].gender_other||''),esc(String(pts[0].education_years||'')),esc(pts[0].mother_tongue||''),esc(pts[0].has_add_lang||''),esc(pts[0].additional_languages_data||''),esc(`${p}.txt`)].join(','));
+  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages','additional_languages_data','stroop'];
+  const rows = Object.entries(byPid).map(([p,pts]) => {
+    const t0 = mapDemographics(pts[0]);
+    return [esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),esc(String(t0.age||'')),esc(t0.gender||''),esc(t0.gender_other||''),esc(String(t0.education_years||'')),esc(t0.mother_tongue||''),esc(t0.has_add_lang||''),esc(String(t0.amount_of_languages||'')),esc(t0.additional_languages_data||''),esc(`${p}.txt`)].join(',');
+  });
   const csv  = [hdrs.join(','),...rows].join('\r\n') + '\r\n';
   const zip  = new AdmZip();
   zip.addFile('data.csv', Buffer.from(csv,'utf8'));

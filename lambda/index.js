@@ -9,7 +9,8 @@ const ADMIN_KEY   = process.env.ADMIN_KEY   || 'stroop_admin_2024';
 
 const CSV_HEADERS = [
   'participant_id','age','gender','gender_other','education_years',
-  'mother_tongue','has_add_lang','amount_of_languages','additional_languages_data',
+  'mother_tongue','has_add_lang','amount_of_languages','additional_languages',
+  'additional_languages_data',
   'is_task','trial_number','block_trial_number','condition',
   'displayed_word','ink_color','user_input','input_method',
   'accuracy','rt_ms','timestamp_iso',
@@ -31,12 +32,37 @@ function mapDemographics(t) {
   mapped.education_years = EDU_MAP[t.education_years] || t.education_years;
   mapped.mother_tongue = TONGUE_MAP[t.mother_tongue] || t.mother_tongue;
   mapped.has_add_lang = YES_NO_MAP[t.has_add_lang] || t.has_add_lang;
+  
   let amount = 1;
+  mapped.additional_languages = '';
+  mapped.additional_languages_data = '';
+
   if (t.has_add_lang === 'כן' || mapped.has_add_lang === 1) {
     if (t.additional_languages_data) {
-      amount += t.additional_languages_data.split('|').length;
+      const langs = t.additional_languages_data.split('|').map(s => s.trim());
+      amount += langs.length;
+      
+      const numericLangs = [];
+      const restData = [];
+      
+      langs.forEach(langStr => {
+        const match = langStr.match(/^([^(]+)\s*\((.*)\)$/);
+        if (match) {
+          const langName = match[1].trim();
+          const details = match[2].trim();
+          numericLangs.push(TONGUE_MAP[langName] || langName);
+          restData.push(details);
+        } else {
+          numericLangs.push('');
+          restData.push(langStr);
+        }
+      });
+      
+      mapped.additional_languages = numericLangs.join(' | ');
+      mapped.additional_languages_data = restData.join(' | ');
     }
   }
+  
   mapped.amount_of_languages = amount;
   return mapped;
 }
@@ -75,7 +101,18 @@ function generateAcmeTrials() {
     const edu = sample(edus);
     const tongue = sample(tongues);
     const hasAdd = tongue === 'עברית' ? (rnd() > 0.3 ? 'כן' : 'לא') : 'כן';
-    const addLangData = hasAdd === 'כן' ? (tongue === 'עברית' ? 'אנגלית (Prof: 7/10)' : 'עברית (Prof: 9/10)') : '';
+    let addLangData = '';
+    if (hasAdd === 'כן') {
+      if (tongue === 'עברית') {
+         if (rnd() > 0.8) {
+           addLangData = 'אנגלית (Age:6-12, Prof:7, Freq:כל יום) | ספרדית (Age:12-18, Prof:4, Freq:לעתים רחוקות)';
+         } else {
+           addLangData = 'אנגלית (Age:6-12, Prof:8, Freq:כל יום)';
+         }
+      } else {
+         addLangData = 'עברית (Age:0-6, Prof:9, Freq:כל יום)';
+      }
+    }
     const baseFactor = 0.85 + rnd() * 0.3;
 
     for (let pt = 1; pt <= 6; pt++) {
@@ -208,10 +245,10 @@ async function handlePsyToolkit(key) {
   const { mode, trials } = await getDatasetByMode(key);
   const byPid = {};
   trials.forEach(t => { const p = t.participant_id||'unknown'; (byPid[p]=byPid[p]||[]).push(t); });
-  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages','additional_languages_data','stroop'];
+  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages','additional_languages','additional_languages_data','stroop'];
   const rows = Object.entries(byPid).map(([p,pts]) => {
     const t0 = mapDemographics(pts[0]);
-    return [esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),esc(String(t0.age||'')),esc(t0.gender||''),esc(t0.gender_other||''),esc(String(t0.education_years||'')),esc(t0.mother_tongue||''),esc(t0.has_add_lang||''),esc(String(t0.amount_of_languages||'')),esc(t0.additional_languages_data||''),esc(`${p}.txt`)].join(',');
+    return [esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),esc(String(t0.age||'')),esc(t0.gender||''),esc(t0.gender_other||''),esc(String(t0.education_years||'')),esc(t0.mother_tongue||''),esc(t0.has_add_lang||''),esc(String(t0.amount_of_languages||'')),esc(t0.additional_languages||''),esc(t0.additional_languages_data||''),esc(`${p}.txt`)].join(',');
   });
   const csv  = [hdrs.join(','),...rows].join('\r\n') + '\r\n';
   const zip  = new AdmZip();

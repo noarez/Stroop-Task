@@ -91,16 +91,19 @@ psytoolkit_stroop_YYYY-MM-DD.zip
 ```
 
 ### `data.csv` Columns
-`participant, start_time, end_time, age, gender, gender_other, education_years, mother_tongue, has_add_lang, amount_of_languages, additional_languages, additional_languages_data, stroop`
+`participant, start_time, end_time, age, gender, gender_other, education_years, mother_tongue, has_add_lang, amount_of_languages, additional_languages, add_lang_age_acq, add_lang_proficiency, add_lang_frequency, stroop`
 
 ### Demographic Data Codebook (`data.csv`)
 
 | Field | Numeric Code | Hebrew Meaning |
 |---|---|---|
 | **Gender**<br>`gender` | 1<br>2<br>3 | זכר (Male)<br>נקבה (Female)<br>אחר (Other) |
-| **Education**<br>`education_years` | 1<br>2<br>3<br>4<br>5<br>6 | השכלה יסודית / חלקית<br>השכלה תיכונית ללא תעודת בגרות<br>השכלה תיכונית עם תעודת בגרות מלאה<br>השכלה על-תיכונית<br>תואר אקדמי ראשון<br>תואר אקדמי שני ומעלה |
+| **Education**<br>`education_years` | 1<br>2<br>3<br>4<br>5<br>6 | השכלה יסודית / חלקית<br>השסכלה תיכונית ללא תעודת בגרות<br>השכלה תיכונית עם תעודת בגרות מלאה<br>השכלה על-תיכונית<br>תואר אקדמי ראשון<br>תואר אקדמי שני ומעלה |
 | **Languages**<br>`mother_tongue`<br>`additional_languages` | 1<br>2<br>3<br>4<br>5<br>6<br>7<br>8 | עברית<br>ערבית<br>רוסית<br>אנגלית<br>אמהרית<br>צרפתית<br>ספרדית<br>אחר |
 | **Has Add Lang**<br>`has_add_lang` | 1<br>2 | כן (Yes)<br>לא (No) |
+| **Age of Acq**<br>`add_lang_age_acq` | 1<br>2<br>3<br>4<br>5 | 0–6<br>6–12<br>12–18<br>18–30<br>30+ |
+| **Proficiency**<br>`add_lang_proficiency` | 1-10 | רמת שליטה (1=Low, 10=High) |
+| **Frequency**<br>`add_lang_frequency` | 1<br>2<br>3<br>4 | בכלל לא (Not at all)<br>לעתים רחוקות (Rarely)<br>מדי כמה ימים (Every few days)<br>כל יום (Every day) |
 
 ### Per-Participant `.txt` Format
 Space-separated, 4 columns per trial row:

@@ -25,7 +25,7 @@ const CSV_FILE  = path.join(DATA_DIR, 'results.csv');
 const CSV_HEADERS = [
   'participant_id','age','gender','gender_other','education_years',
   'mother_tongue','has_add_lang','amount_of_languages','additional_languages',
-  'additional_languages_data',
+  'add_lang_age_acq', 'add_lang_proficiency', 'add_lang_frequency',
   'is_task','trial_number','block_trial_number','condition',
   'displayed_word','ink_color','user_input','input_method',
   'accuracy','rt_ms','timestamp_iso',
@@ -40,6 +40,19 @@ const TONGUE_MAP = {
   'עברית':1, 'ערבית':2, 'רוסית':3, 'אנגלית':4, 'אמהרית':5, 'צרפתית':6, 'ספרדית':7, 'אחר':8
 };
 const YES_NO_MAP = { 'כן':1, 'לא':2 };
+const AGE_ACQ_MAP = {
+  '0-6': 1, '0–6': 1,
+  '6-12': 2, '6–12': 2,
+  '12-18': 3, '12–18': 3,
+  '18-30': 4, '18–30': 4,
+  '30+': 5
+};
+const FREQ_MAP = {
+  'בכלל לא': 1,
+  'לעתים רחוקות': 2,
+  'מדי כמה ימים': 3,
+  'כל יום': 4
+};
 
 function mapDemographics(t) {
   const mapped = { ...t };
@@ -50,7 +63,10 @@ function mapDemographics(t) {
   
   let amount = 1;
   mapped.additional_languages = '';
-  mapped.additional_languages_data = '';
+  mapped.add_lang_age_acq = '';
+  mapped.add_lang_proficiency = '';
+  mapped.add_lang_frequency = '';
+  delete mapped.additional_languages_data;
 
   if (t.has_add_lang === 'כן' || mapped.has_add_lang === 1) {
     if (t.additional_languages_data) {
@@ -58,23 +74,35 @@ function mapDemographics(t) {
       amount += langs.length;
       
       const numericLangs = [];
-      const restData = [];
+      const ageAcqs = [];
+      const profs = [];
+      const freqs = [];
       
       langs.forEach(langStr => {
         const match = langStr.match(/^([^(]+)\s*\((.*)\)$/);
         if (match) {
           const langName = match[1].trim();
-          const details = match[2].trim();
           numericLangs.push(TONGUE_MAP[langName] || langName);
-          restData.push(details);
+          
+          const details = match[2]; 
+          const dMatch = details.match(/Age:\s*([^,]+),\s*Prof:\s*([^,]+),\s*Freq:\s*(.+)/);
+          if (dMatch) {
+             ageAcqs.push(AGE_ACQ_MAP[dMatch[1].trim()] || dMatch[1].trim());
+             profs.push(dMatch[2].trim());
+             freqs.push(FREQ_MAP[dMatch[3].trim()] || dMatch[3].trim());
+          } else {
+             ageAcqs.push(''); profs.push(''); freqs.push('');
+          }
         } else {
           numericLangs.push('');
-          restData.push(langStr);
+          ageAcqs.push(''); profs.push(''); freqs.push('');
         }
       });
       
       mapped.additional_languages = numericLangs.join(' | ');
-      mapped.additional_languages_data = restData.join(' | ');
+      mapped.add_lang_age_acq = ageAcqs.join(' | ');
+      mapped.add_lang_proficiency = profs.join(' | ');
+      mapped.add_lang_frequency = freqs.join(' | ');
     }
   }
   
@@ -300,7 +328,7 @@ app.get(['/analytics/download-psytoolkit', '/admin/download-psytoolkit'], (req, 
     return (v.includes(',') || v.includes('"')) ? `"${v.replace(/"/g, '""')}"` : v;
   }
 
-  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages','additional_languages','additional_languages_data','stroop'];
+  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages','additional_languages','add_lang_age_acq','add_lang_proficiency','add_lang_frequency','stroop'];
   const rows = Object.entries(byPid).map(([p, pts]) => {
     const t0 = mapDemographics(pts[0]);
     return [
@@ -315,7 +343,9 @@ app.get(['/analytics/download-psytoolkit', '/admin/download-psytoolkit'], (req, 
       escVal(t0.has_add_lang || ''),
       escVal(String(t0.amount_of_languages || '')),
       escVal(t0.additional_languages || ''),
-      escVal(t0.additional_languages_data || ''),
+      escVal(String(t0.add_lang_age_acq || '')),
+      escVal(String(t0.add_lang_proficiency || '')),
+      escVal(t0.add_lang_frequency || ''),
       escVal(`${p}.txt`)
     ].join(',');
   });
@@ -397,7 +427,46 @@ function analyticsHtml(mode, trials) {
 
   const genderCounts = {};
   const ageBins = {'18-25':0,'26-35':0,'36-45':0,'46-55':0,'56+':0};
-  pSummaries.forEach(p => { const g = p.gender||'N/A'; genderCounts[g]=(genderCounts[g]||0)+1; const a=parseInt(p.age); if(!isNaN(a)){if(a<=25)ageBins['18-25']++;else if(a<=35)ageBins['26-35']++;else if(a<=45)ageBins['36-45']++;else if(a<=55)ageBins['46-55']++;else ageBins['56+']++;} });
+  
+  const ageGroupStroop = {
+    '18-25': { mono: [], bi: [] },
+    '26-35': { mono: [], bi: [] },
+    '36-45': { mono: [], bi: [] },
+    '46-55': { mono: [], bi: [] },
+    '56+': { mono: [], bi: [] }
+  };
+  let monoStroopTotal = [];
+  let biStroopTotal = [];
+
+  pSummaries.forEach(p => { 
+    const g = p.gender||'N/A'; 
+    genderCounts[g]=(genderCounts[g]||0)+1; 
+    const a=parseInt(p.age); 
+    
+    const isBi = p.demo.has_add_lang === 'כן' || p.demo.has_add_lang === 1 || p.demo.has_add_lang === '1';
+    if (isBi) biStroopTotal.push(p.effect);
+    else monoStroopTotal.push(p.effect);
+    
+    if(!isNaN(a)){
+      let group = '56+';
+      if(a<=25) group = '18-25';
+      else if(a<=35) group = '26-35';
+      else if(a<=45) group = '36-45';
+      else if(a<=55) group = '46-55';
+      
+      ageBins[group]++;
+      if (isBi) ageGroupStroop[group].bi.push(p.effect);
+      else ageGroupStroop[group].mono.push(p.effect);
+    } 
+  });
+  
+  function avg(arr) { return arr.length ? Math.round(arr.reduce((s,v)=>s+v,0)/arr.length) : 0; }
+  const monoAvg = avg(monoStroopTotal);
+  const biAvg = avg(biStroopTotal);
+  const interactionLabels = Object.keys(ageGroupStroop);
+  const interactionMono = interactionLabels.map(k => avg(ageGroupStroop[k].mono));
+  const interactionBi = interactionLabels.map(k => avg(ageGroupStroop[k].bi));
+  const ageMainEffect = interactionLabels.map(k => avg([...ageGroupStroop[k].mono, ...ageGroupStroop[k].bi]));
 
   const recent = all.slice(-10).reverse();
   const modeTitle = mode==='acme'?'🔬 ACME Benchmark (N='+totalP+')':mode==='testing'?'🛠️ Testing':'🌐 Organic Data';
@@ -475,6 +544,18 @@ td{padding:8px 11px;border-top:1px solid rgba(255,255,255,.05);color:#c5c8d8}
 <div class="si"><strong>Error & Omission Rate</strong><div class="v" style="color:#e09852">${totalReal>0?Math.round((1-overallAcc/100)*1000)/10:0}% · ${totalTimeouts} timeouts</div><div style="font-size:.75rem;color:#8b8fa8;margin-top:3px">Outside 2000ms window</div></div>
 </div></div>
 
+<div class="rbox" style="margin-top:24px; border-color:rgba(45,184,122,.25);">
+  <div class="rtitle">🎯 APA Research Insights: Age x Bilingualism Interaction</div>
+  <div class="sg" style="margin-bottom:16px;">
+    <div class="si"><strong>Monolingual Mean Interference</strong><div class="v" style="color:#e09852">${monoAvg>0?'+':''}${monoAvg} ms</div><div style="font-size:.75rem;color:#8b8fa8;margin-top:3px">N=${monoStroopTotal.length}</div></div>
+    <div class="si"><strong>Bilingual Mean Interference</strong><div class="v" style="color:#52b46b">${biAvg>0?'+':''}${biAvg} ms</div><div style="font-size:.75rem;color:#8b8fa8;margin-top:3px">N=${biStroopTotal.length}</div></div>
+  </div>
+  <div class="cg" style="margin-bottom:0;">
+    <div class="cc"><div class="ct">Main Effect of Age (Stroop Δ ms)</div><div class="cv t"><canvas id="c7"></canvas></div></div>
+    <div class="cc"><div class="ct">Interaction: Age x Bilingualism (Stroop Δ ms)</div><div class="cv t"><canvas id="c8"></canvas></div></div>
+  </div>
+</div>
+
 <div class="cg">
 <div class="cc"><div class="ct">📊 Per-Participant RT (Congruent vs Incongruent)</div><div class="cv t"><canvas id="c1"></canvas></div></div>
 <div class="cc"><div class="ct">📈 RT Distribution Histogram</div><div class="cv t"><canvas id="c2"></canvas></div></div>
@@ -513,6 +594,10 @@ new Chart(document.getElementById('c4'),{type:'bar',data:{labels:${JSON.stringif
 new Chart(document.getElementById('c5'),{type:'doughnut',data:{labels:${JSON.stringify(Object.keys(genderCounts))},datasets:[{data:${JSON.stringify(Object.values(genderCounts))},backgroundColor:['rgba(124,158,245,0.8)','rgba(167,139,250,0.8)','rgba(82,180,107,0.8)','rgba(224,152,82,0.8)'],borderWidth:0}]},options:{...O,cutout:'55%',plugins:{legend:{position:'right',labels:{color:'#e8eaf0',padding:12}}}}});
 
 new Chart(document.getElementById('c6'),{type:'bar',data:{labels:${JSON.stringify(Object.keys(ageBins))},datasets:[{data:${JSON.stringify(Object.values(ageBins))},backgroundColor:'rgba(124,158,245,0.7)',borderRadius:6}]},options:{...O,plugins:{legend:{display:false}},scales:{y:{grid:{color:gc},ticks:{color:tc,stepSize:1}},x:{grid:{display:false},ticks:{color:tc}}}}});
+
+new Chart(document.getElementById('c7'),{type:'line',data:{labels:${JSON.stringify(interactionLabels)},datasets:[{label:'Mean Stroop Δ',data:${JSON.stringify(ageMainEffect)},borderColor:'rgba(124,158,245,1)',backgroundColor:'rgba(124,158,245,0.2)',fill:true,tension:0.3}]},options:{...O,plugins:{legend:{display:false}},scales:{y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:'Stroop Δ (ms)',color:tc}},x:{grid:{display:false},ticks:{color:tc}}}}});
+
+new Chart(document.getElementById('c8'),{type:'bar',data:{labels:${JSON.stringify(interactionLabels)},datasets:[{label:'Monolingual',data:${JSON.stringify(interactionMono)},backgroundColor:'rgba(224,152,82,0.75)',borderRadius:4},{label:'Bilingual/Multilingual',data:${JSON.stringify(interactionBi)},backgroundColor:'rgba(82,180,107,0.75)',borderRadius:4}]},options:{...O,plugins:{legend:{labels:{color:'#e8eaf0'}}},scales:{y:{grid:{color:gc},ticks:{color:tc},title:{display:true,text:'Stroop Δ (ms)',color:tc}},x:{grid:{display:false},ticks:{color:tc}}}}});
 </script></body></html>`;
 }
 

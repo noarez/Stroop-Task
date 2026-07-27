@@ -379,7 +379,7 @@ function analyticsHtml(mode, trials) {
     genderCounts[g]=(genderCounts[g]||0)+1; 
     const a=parseInt(p.age); 
     
-    const isBi = p.demo.has_add_lang === 'כן' || p.demo.has_add_lang === 1 || p.demo.has_add_lang === '1';
+    const isBi = p.addLang && p.addLang !== 'לא' && p.addLang !== 2 && p.addLang !== '2' && p.addLang !== 'N/A';
     if (isBi) biStroopTotal.push(p.effect);
     else monoStroopTotal.push(p.effect);
     

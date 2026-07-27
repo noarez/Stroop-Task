@@ -1,0 +1,8 @@
+--- DATA INTEGRITY EVALUATION ---
+Headers: participant_id, age, gender, gender_other, education_years, mother_tongue, has_add_lang, amount_of_languages, additional_languages, add_lang_age_acq, add_lang_proficiency, add_lang_frequency, is_task, trial_number, block_trial_number, condition, displayed_word, ink_color, user_input, input_method, accuracy, rt_ms, timestamp_iso
+✅ CSV Headers match the APA Codebook specification.
+
+Evaluating 3168 participant rows...
+
+--- INTEGRITY RESULTS ---
+✅ All 3168 rows perfectly adhere to the numerical Codebook definitions.

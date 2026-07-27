@@ -9,8 +9,10 @@ const ADMIN_KEY   = process.env.ADMIN_KEY   || 'stroop_admin_2024';
 
 const CSV_HEADERS = [
   'participant_id','age','gender','gender_other','education_years',
-  'mother_tongue','has_add_lang','amount_of_languages','additional_languages',
-  'add_lang_age_acq', 'add_lang_proficiency', 'add_lang_frequency',
+  'mother_tongue','has_add_lang','amount_of_languages',
+  'add_lang_1','add_lang_1_age_acq','add_lang_1_proficiency','add_lang_1_frequency',
+  'add_lang_2','add_lang_2_age_acq','add_lang_2_proficiency','add_lang_2_frequency',
+  'add_lang_3','add_lang_3_age_acq','add_lang_3_proficiency','add_lang_3_frequency',
   'is_task','trial_number','block_trial_number','condition',
   'displayed_word','ink_color','user_input','input_method',
   'accuracy','rt_ms','timestamp_iso',
@@ -47,47 +49,39 @@ function mapDemographics(t) {
   mapped.has_add_lang = YES_NO_MAP[t.has_add_lang] || t.has_add_lang;
   
   let amount = 1;
-  mapped.additional_languages = '';
-  mapped.add_lang_age_acq = '';
-  mapped.add_lang_proficiency = '';
-  mapped.add_lang_frequency = '';
+  for (let i = 1; i <= 3; i++) {
+    mapped[`add_lang_${i}`] = '';
+    mapped[`add_lang_${i}_age_acq`] = '';
+    mapped[`add_lang_${i}_proficiency`] = '';
+    mapped[`add_lang_${i}_frequency`] = '';
+  }
+  delete mapped.additional_languages;
   delete mapped.additional_languages_data;
 
   if (t.has_add_lang === 'כן' || mapped.has_add_lang === 1) {
     if (t.additional_languages_data) {
-      const langs = t.additional_languages_data.split('|').map(s => s.trim());
+      const langs = t.additional_languages_data.split('|').map(s => s.trim()).filter(Boolean);
       amount += langs.length;
       
-      const numericLangs = [];
-      const ageAcqs = [];
-      const profs = [];
-      const freqs = [];
-      
-      langs.forEach(langStr => {
+      langs.forEach((langStr, idx) => {
+        if (idx >= 3) return; 
+        const n = idx + 1;
         const match = langStr.match(/^([^(]+)\s*\((.*)\)$/);
         if (match) {
           const langName = match[1].trim();
-          numericLangs.push(TONGUE_MAP[langName] || langName);
+          mapped[`add_lang_${n}`] = TONGUE_MAP[langName] || langName;
           
           const details = match[2]; 
           const dMatch = details.match(/Age:\s*([^,]+),\s*Prof:\s*([^,]+),\s*Freq:\s*(.+)/);
           if (dMatch) {
-             ageAcqs.push(AGE_ACQ_MAP[dMatch[1].trim()] || dMatch[1].trim());
-             profs.push(dMatch[2].trim());
-             freqs.push(FREQ_MAP[dMatch[3].trim()] || dMatch[3].trim());
-          } else {
-             ageAcqs.push(''); profs.push(''); freqs.push('');
+             mapped[`add_lang_${n}_age_acq`] = AGE_ACQ_MAP[dMatch[1].trim()] || dMatch[1].trim();
+             mapped[`add_lang_${n}_proficiency`] = dMatch[2].trim();
+             mapped[`add_lang_${n}_frequency`] = FREQ_MAP[dMatch[3].trim()] || dMatch[3].trim();
           }
         } else {
-          numericLangs.push('');
-          ageAcqs.push(''); profs.push(''); freqs.push('');
+          mapped[`add_lang_${n}`] = langStr;
         }
       });
-      
-      mapped.additional_languages = numericLangs.join(' | ');
-      mapped.add_lang_age_acq = ageAcqs.join(' | ');
-      mapped.add_lang_proficiency = profs.join(' | ');
-      mapped.add_lang_frequency = freqs.join(' | ');
     }
   }
   
@@ -273,10 +267,23 @@ async function handlePsyToolkit(key) {
   const { mode, trials } = await getDatasetByMode(key);
   const byPid = {};
   trials.forEach(t => { const p = t.participant_id||'unknown'; (byPid[p]=byPid[p]||[]).push(t); });
-  const hdrs = ['participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages','additional_languages','add_lang_age_acq','add_lang_proficiency','add_lang_frequency','stroop'];
+  const hdrs = [
+    'participant','start_time','end_time','age','gender','gender_other','education_years','mother_tongue','has_add_lang','amount_of_languages',
+    'add_lang_1','add_lang_1_age_acq','add_lang_1_proficiency','add_lang_1_frequency',
+    'add_lang_2','add_lang_2_age_acq','add_lang_2_proficiency','add_lang_2_frequency',
+    'add_lang_3','add_lang_3_age_acq','add_lang_3_proficiency','add_lang_3_frequency','stroop'
+  ];
   const rows = Object.entries(byPid).map(([p,pts]) => {
     const t0 = mapDemographics(pts[0]);
-    return [esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),esc(String(t0.age||'')),esc(t0.gender||''),esc(t0.gender_other||''),esc(String(t0.education_years||'')),esc(t0.mother_tongue||''),esc(t0.has_add_lang||''),esc(String(t0.amount_of_languages||'')),esc(t0.additional_languages||''),esc(String(t0.add_lang_age_acq||'')),esc(String(t0.add_lang_proficiency||'')),esc(t0.add_lang_frequency||''),esc(`${p}.txt`)].join(',');
+    return [
+      esc(p),esc(pts[0].timestamp_iso||''),esc(pts[pts.length-1].timestamp_iso||''),
+      esc(String(t0.age||'')),esc(t0.gender||''),esc(t0.gender_other||''),esc(String(t0.education_years||'')),
+      esc(t0.mother_tongue||''),esc(t0.has_add_lang||''),esc(String(t0.amount_of_languages||'')),
+      esc(t0.add_lang_1||''),esc(String(t0.add_lang_1_age_acq||'')),esc(String(t0.add_lang_1_proficiency||'')),esc(t0.add_lang_1_frequency||''),
+      esc(t0.add_lang_2||''),esc(String(t0.add_lang_2_age_acq||'')),esc(String(t0.add_lang_2_proficiency||'')),esc(t0.add_lang_2_frequency||''),
+      esc(t0.add_lang_3||''),esc(String(t0.add_lang_3_age_acq||'')),esc(String(t0.add_lang_3_proficiency||'')),esc(t0.add_lang_3_frequency||''),
+      esc(`${p}.txt`)
+    ].join(',');
   });
   const csv  = [hdrs.join(','),...rows].join('\r\n') + '\r\n';
   const zip  = new AdmZip();

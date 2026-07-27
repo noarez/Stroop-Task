@@ -91,7 +91,13 @@ psytoolkit_stroop_YYYY-MM-DD.zip
 ```
 
 ### `data.csv` Columns
-`participant, start_time, end_time, age, gender, gender_other, education_years, mother_tongue, has_add_lang, amount_of_languages, additional_languages, add_lang_age_acq, add_lang_proficiency, add_lang_frequency, stroop`
+- **`amount_of_languages`**: Integer count of total languages spoken (minimum 1, representing Mother Tongue).
+- **`add_lang_1`**: Code for the participant's first additional language (1-8 as per `mother_tongue`). Empty if none.
+- **`add_lang_1_age_acq`**: Age of acquisition for the 1st additional language (1 = 0-6, 2 = 6-12, 3 = 12-18, 4 = 18-30, 5 = 30+). Empty if none.
+- **`add_lang_1_proficiency`**: Self-reported proficiency for the 1st additional language (1-10). Empty if none.
+- **`add_lang_1_frequency`**: Frequency of use for the 1st additional language (1 = Not at all, 2 = Rarely, 3 = Every few days, 4 = Every day). Empty if none.
+- **`add_lang_2`**, **`add_lang_2_age_acq`**, **`add_lang_2_proficiency`**, **`add_lang_2_frequency`**: Second additional language data (using the same numeric scales as above). Empty if none.
+- **`add_lang_3`**, **`add_lang_3_age_acq`**, **`add_lang_3_proficiency`**, **`add_lang_3_frequency`**: Third additional language data (using the same numeric scales as above). Empty if none.
 
 ### Demographic Data Codebook (`data.csv`)
 
@@ -99,7 +105,7 @@ psytoolkit_stroop_YYYY-MM-DD.zip
 |---|---|---|
 | **Gender**<br>`gender` | 1<br>2<br>3 | זכר (Male)<br>נקבה (Female)<br>אחר (Other) |
 | **Education**<br>`education_years` | 1<br>2<br>3<br>4<br>5<br>6 | השכלה יסודית / חלקית<br>השסכלה תיכונית ללא תעודת בגרות<br>השכלה תיכונית עם תעודת בגרות מלאה<br>השכלה על-תיכונית<br>תואר אקדמי ראשון<br>תואר אקדמי שני ומעלה |
-| **Languages**<br>`mother_tongue`<br>`additional_languages` | 1<br>2<br>3<br>4<br>5<br>6<br>7<br>8 | עברית<br>ערבית<br>רוסית<br>אנגלית<br>אמהרית<br>צרפתית<br>ספרדית<br>אחר |
+| **Languages**<br>`mother_tongue` | 1<br>2<br>3<br>4<br>5<br>6<br>7<br>8 | עברית<br>ערבית<br>רוסית<br>אנגלית<br>אמהרית<br>צרפתית<br>ספרדית<br>אחר |
 | **Has Add Lang**<br>`has_add_lang` | 1<br>2 | כן (Yes)<br>לא (No) |
 | **Age of Acq**<br>`add_lang_age_acq` | 1<br>2<br>3<br>4<br>5 | 0–6<br>6–12<br>12–18<br>18–30<br>30+ |
 | **Proficiency**<br>`add_lang_proficiency` | 1-10 | רמת שליטה (1=Low, 10=High) |

@@ -18,8 +18,8 @@ module.exports = defineConfig({
   ],
 
   use: {
-    /* The app is already served by `npx serve` */
-    baseURL: 'http://localhost:52630',
+    /* Express local dev server port */
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
 
     /* Collect traces and screenshots on failure */
     trace: 'on-first-retry',

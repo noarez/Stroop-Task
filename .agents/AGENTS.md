@@ -16,3 +16,11 @@ This repository contains a full-stack Stroop Task web application for psychologi
    - `.agents/okf/stroop_architecture.md`: Canonical AWS architecture and infrastructure map.
    - `.agents/okf/psytoolkit_export_spec.md`: Dataset schema and PsyToolkit export mapping rules.
 
+## UI/UX & Code Quality Safeguards for AI Agents (Regression Prevention)
+1. **Design Token Discipline:** All colors, background tints, fonts, borders, and shadows MUST consume existing CSS variables from `:root` / `@media (prefers-color-scheme: light)`. Do NOT introduce ad-hoc CSS variables or hardcoded hex colors unless explicitly adding to the design token list.
+2. **Dual-Mode Compliance Requirement:** Every UI change MUST be evaluated for BOTH Light Mode AND Dark Mode. Never hardcode dark or light backgrounds/text-shadows that break contrast in the opposite theme.
+3. **No Nested Containers ("Box-in-a-Box"):** Always inspect parent HTML containers (`.card`, `.wide-card`) before styling child elements. Do NOT add heavy card borders, background cards, or extra paddings inside an element that already resides in a `.card`.
+4. **Preserve Developer Testing Hooks:** Never delete, omit, or disable developer testing hooks in `app.js` (e.g., `window.testInsight`).
+5. **Automated Verification:** Run Playwright smoke tests (`npx playwright test`) after making UI/UX or app logic changes to verify zero regressions.
+
+

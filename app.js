@@ -976,9 +976,9 @@ function calculatePersonalInsight() {
 
   const summary = document.getElementById('insight-summary');
   if (diff > 0) {
-    summary.innerHTML = `זמן ה״מאבק״ שלכם: הקונפליקט הפנימי הזה עיכב אתכם בדיוק ב-<strong>${diff} מילישניות</strong> בממוצע לכל מילה!`;
+    summary.innerHTML = `זמן הדיכוי שלכם: ההתגברות על הרגל הקריאה האוטומטי עיכבה אתכם בדיוק ב-<strong>${diff} מילישניות</strong> בממוצע לכל מילה!`;
   } else if (diff < 0) {
-    summary.innerHTML = `מדהים! הצלחתם לנצח את האינסטינקט והייתם מהירים יותר במילים המבלבלות ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
+    summary.innerHTML = `מדהים! הצלחתם לנצח את הרגל הקריאה שלכם והייתם מהירים יותר במילים המבלבלות ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
   } else {
     summary.innerHTML = `וואו, המהירות שלך הייתה זהה לחלוטין בשני המצבים! אין שום עיכוב!`;
   }
@@ -992,17 +992,17 @@ function calculatePersonalInsight() {
   if (diff > 0) {
     profileContainer.classList.add('show');
     if (diff < 150) {
-      pIcon.textContent = '🧘';
-      pTitle.textContent = 'פרופיל: מאסטר בקונפליקטים';
-      pDesc.textContent = 'יש לך יכולת פנומנלית להשתיק את האינסטינקטים ולנצח במשיכת החבל מיד!';
+      pIcon.textContent = '🌟';
+      pTitle.textContent = 'פרופיל: גמישות קוגניטיבית גבוהה';
+      pDesc.textContent = 'הצלחתם להסיט את הקשב מהרגל הקריאה שלכם במהירות מרשימה.';
     } else if (diff <= 300) {
-      pIcon.textContent = '⚖️';
-      pTitle.textContent = 'פרופיל: מיישב סכסוכים';
-      pDesc.textContent = 'המוח שלך מתמודד עם הקונפליקט בצורה יפה ומאוזנת.';
+      pIcon.textContent = '📊';
+      pTitle.textContent = 'פרופיל: הפרעת קריאה תקינה';
+      pDesc.textContent = 'הרגל הקריאה שלכם מבוסס וחזק, מה שיוצר עיכוב טיפוסי ובריא במוח.';
     } else {
       pIcon.textContent = '📖';
-      pTitle.textContent = 'פרופיל: שבוי של מילים';
-      pDesc.textContent = 'המוח שלך כל כך אוהב לקרוא, שהיה לו קשה מאוד לשחרר את החבל!';
+      pTitle.textContent = 'פרופיל: אוטומטיות קריאה חזקה';
+      pDesc.textContent = 'המסלולים במוח שלכם לקריאת מילים הם כל כך מהירים ואוטומטיים, שקשה לכם מאוד להתעלם מהם!';
     }
   }
 

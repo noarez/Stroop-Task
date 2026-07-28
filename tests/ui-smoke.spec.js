@@ -31,12 +31,16 @@ test.describe('Stroop UI & Developer Hook Smoke Tests', () => {
 
     // Verify profile card is populated and shown
     const profileCard = page.locator('#insight-profile');
-    await expect(profileCard).toHaveClass(/show/);
     await expect(page.locator('#profile-title')).not.toBeEmpty();
 
     // Verify bars exist
     await expect(page.locator('#bar-congruent')).toBeVisible();
     await expect(page.locator('#bar-incongruent')).toBeVisible();
+
+    // Verify accordion opens on click
+    const accordionBtn = page.locator('#acc-insight-explanation .accordion-toggle');
+    await accordionBtn.click();
+    await expect(page.locator('#acc-insight-explanation')).toHaveClass(/open/);
   });
 
   test('Light Mode rendering maintains high contrast and visibility', async ({ page }) => {

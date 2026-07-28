@@ -208,62 +208,65 @@
   <!-- ══════════════════════ SCREEN 5: COMPLETION ══════════════════════ -->
   <div id="screen-complete" class="screen">
     <div class="card wide-card completion-card">
-      <div class="completion-header">
-        <div class="logo-badge">🎉</div>
-        <h1>תודה רבה!</h1>
-        <p class="subtitle">השתתפותך חשובה לנו — המטלה הסתיימה בהצלחה</p>
+      <div class="logo-badge">🎉</div>
+      <h1>תודה רבה!</h1>
+      <p class="subtitle">השתתפותך חשובה לנו — המטלה הסתיימה בהצלחה</p>
+
+      <div class="data-status-note" id="data-status-box">
+        <span id="data-status-icon">⏳</span> <span id="data-status-msg">שומר נתונים...</span>
       </div>
 
-      <div class="info-box data-status-box" id="data-status-box">
-        <span class="info-icon" id="data-status-icon">⏳</span>
-        <div id="data-status-msg">שומר נתונים...</div>
-      </div>
-
-      <div id="insight-container" class="insight-dashboard hidden">
-        <!-- Zone 1: Hero Profile Card -->
-        <div class="hero-profile-card" id="insight-profile">
-          <div class="hero-profile-icon" id="profile-icon">🌟</div>
-          <div class="hero-profile-info">
-            <h2 class="hero-profile-title" id="profile-title">פרופיל: גמישות קוגניטיבית גבוהה</h2>
-            <p class="hero-profile-desc" id="profile-desc">הצלחתם להסיט את הקשב מהרגל הקריאה שלכם במהירות מרשימה.</p>
+      <div id="insight-container" class="insight-seamless-flow hidden">
+        <!-- Hero Profile (Seamless header, no sub-card box) -->
+        <div class="seamless-profile" id="insight-profile">
+          <span class="seamless-profile-icon" id="profile-icon">🌟</span>
+          <div class="seamless-profile-text">
+            <h2 class="seamless-profile-title" id="profile-title">פרופיל: גמישות קוגניטיבית גבוהה</h2>
+            <p class="seamless-profile-desc" id="profile-desc">הצלחתם להסיט את הקשב מהרגל הקריאה שלכם במהירות מרשימה.</p>
           </div>
         </div>
 
-        <!-- Zone 2: Hero Stat & Slim Bars -->
-        <div class="hero-stat-box">
+        <div class="divider"></div>
+
+        <!-- Core Stat & Bars (Seamless flow) -->
+        <div class="seamless-stat-group">
           <div class="hero-stat-number" id="hero-stat-diff">+0ms</div>
           <div class="hero-stat-label">זמן דיכוי הקריאה האוטומטית</div>
+
+          <div class="seamless-bars">
+            <div class="insight-row">
+              <span class="insight-label">קריאה רגילה</span>
+              <div class="insight-bar-wrapper">
+                <div id="bar-congruent" class="insight-bar congruent-bar"></div>
+              </div>
+              <span id="time-congruent" class="insight-time">0ms</span>
+            </div>
+            <div class="insight-row">
+              <span class="insight-label">מילים מבלבלות</span>
+              <div class="insight-bar-wrapper">
+                <div id="bar-incongruent" class="insight-bar incongruent-bar"></div>
+              </div>
+              <span id="time-incongruent" class="insight-time">0ms</span>
+            </div>
+          </div>
         </div>
 
-        <div class="insight-bars-slim">
-          <div class="insight-row">
-            <span class="insight-label">קריאה רגילה</span>
-            <div class="insight-bar-wrapper">
-              <div id="bar-congruent" class="insight-bar congruent-bar"></div>
-            </div>
-            <span id="time-congruent" class="insight-time">0ms</span>
-          </div>
-          <div class="insight-row">
-            <span class="insight-label">מילים מבלבלות</span>
-            <div class="insight-bar-wrapper">
-              <div id="bar-incongruent" class="insight-bar incongruent-bar"></div>
-            </div>
-            <span id="time-incongruent" class="insight-time">0ms</span>
-          </div>
-        </div>
+        <div class="divider"></div>
 
-        <!-- Zone 3: Progressive Disclosure Accordion -->
-        <div class="accordion insight-accordion" id="acc-insight-explanation">
-          <button class="accordion-toggle" onclick="toggleAccordion('acc-insight-explanation')" aria-expanded="false">
-            <span>💡 איך זה עובד ומה הקשר לשפות?</span>
-            <span class="accordion-icon">▼</span>
-          </button>
-          <div class="accordion-body">
-            <div class="accordion-content">
-              <p>עבור מבוגרים, הקריאה היא פעולה אוטומטית לחלוטין. המוח שלכם קורא את המילה עוד לפני שיש לכם הזדמנות לעבד את צבע הדיו! כדי לומר את הצבע של המילים ה"מבלבלות", נאלצתם לדכא באופן פעיל את "הרגל הקריאה" העמוק שלכם.</p>
-              <p>הפעולה הזו דורשת <strong>גמישות קוגניטיבית</strong>.</p>
-              <div class="insight-fun-fact-inline">
-                <strong>איך זה קשור לשפות?</strong> דיבור במספר שפות דורש "גמישות קוגניטיבית" מתמדת כדי לעבור ביניהן מבלי להתבלבל. אנו חוקרים האם האימון המוחי היומיומי הזה עוזר לאנשים להתגבר מהר יותר על הרגלים אוטומטיים (כמו קריאה)! התוצאות שלכם עוזרות לנו לגלות את התשובה.
+        <!-- Working Accordion -->
+        <div class="accordion" style="margin-top: 16px;">
+          <div class="accordion-item" id="acc-insight-explanation">
+            <button class="accordion-toggle" onclick="toggleAccordion('acc-insight-explanation')" aria-expanded="false">
+              <span>💡 איך זה עובד ומה הקשר לשפות?</span>
+              <span class="accordion-icon">▼</span>
+            </button>
+            <div class="accordion-body">
+              <div class="accordion-content">
+                <p>עבור מבוגרים, הקריאה היא פעולה אוטומטית לחלוטין. המוח שלכם קורא את המילה עוד לפני שיש לכם הזדמנות לעבד את צבע הדיו!</p>
+                <p>כדי לומר את הצבע של המילים ה"מבלבלות", נאלצתם לדכא באופן פעיל את "הרגל הקריאה" העמוק שלכם. הפעולה הזו דורשת <strong>גמישות קוגניטיבית</strong>.</p>
+                <div class="insight-fun-fact-inline">
+                  <strong>איך זה קשור לשפות?</strong> דיבור במספר שפות דורש "גמישות קוגניטיבית" מתמדת כדי לעבור ביניהן מבלי להתבלבל. אנו חוקרים האם האימון המוחי היומיומי הזה עוזר לאנשים להתגבר מהר יותר על הרגלים אוטומטיים (כמו קריאה)! התוצאות שלכם עוזרות לנו לגלות את התשובה.
+                </div>
               </div>
             </div>
           </div>

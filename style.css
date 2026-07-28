@@ -61,6 +61,14 @@
   /* Typography */
   --font: 'Heebo', 'Arial Hebrew', Arial, sans-serif;
 
+  /* Insight UI */
+  --insight-bg: rgba(22, 27, 39, 0.6);
+  --insight-border: rgba(255, 255, 255, 0.1);
+  --insight-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --insight-profile-bg: linear-gradient(135deg, rgba(29, 34, 53, 0.8), rgba(22, 27, 39, 0.9));
+  --insight-title-color: #ffffff;
+  --insight-ff-bg: rgba(49, 46, 129, 0.4);
+
   /* Timing */
   --transition: 0.22s ease;
   --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -93,11 +101,19 @@
     --grad-accent: linear-gradient(90deg, #4f6ef7, #7c5ef5);
     --grad-btn:    linear-gradient(135deg, #3656d6 0%, #4f6ef7 100%);
 
-    --yellow: #b08800;
+    --yellow: #e8b100;
 
     --shadow:    0 32px 80px rgba(0, 0, 0, 0.12);
     --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.08);
     --shadow-accent: 0 8px 32px rgba(79, 110, 247, 0.20);
+    
+    /* Insight UI */
+    --insight-bg: rgba(255, 255, 255, 0.7);
+    --insight-border: rgba(0, 0, 0, 0.08);
+    --insight-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --insight-profile-bg: linear-gradient(135deg, #ffffff, #f4f6fd);
+    --insight-title-color: var(--text);
+    --insight-ff-bg: rgba(79, 110, 247, 0.1);
   }
 }
 
@@ -380,13 +396,13 @@ strong {
 .insight-container {
   margin-top: 32px;
   padding: 32px;
-  background: rgba(22, 27, 39, 0.6);
+  background: var(--insight-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--insight-border);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--insight-shadow);
   text-align: right;
   animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
@@ -401,7 +417,7 @@ strong {
   margin-top: 0;
   margin-bottom: 12px;
   font-size: 1.4rem;
-  color: #ffffff;
+  color: var(--insight-title-color);
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -511,13 +527,13 @@ strong {
   align-items: center;
   gap: 20px;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(29, 34, 53, 0.8), rgba(22, 27, 39, 0.9));
-  border: 1px solid rgba(124, 158, 245, 0.3);
+  background: var(--insight-profile-bg);
+  border: 1px solid var(--insight-border);
   border-radius: 16px;
   margin-bottom: 24px;
   text-align: right;
   display: none; /* revealed via js */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--insight-shadow);
 }
 .insight-profile.show {
   display: flex;
@@ -552,14 +568,14 @@ strong {
 .insight-fun-fact {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #e2e8f0;
-  background: rgba(49, 46, 129, 0.4);
+  color: var(--text);
+  background: var(--insight-ff-bg);
   padding: 16px 20px;
   border-radius: 12px;
   border-right: 4px solid var(--accent); /* RTL right border */
-  border-left: 1px solid rgba(255,255,255,0.05);
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-left: 1px solid var(--insight-border);
+  border-top: 1px solid var(--insight-border);
+  border-bottom: 1px solid var(--insight-border);
 }
 
 @keyframes fadeUp {

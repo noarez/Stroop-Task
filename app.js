@@ -976,11 +976,11 @@ function calculatePersonalInsight() {
 
   const summary = document.getElementById('insight-summary');
   if (diff > 0) {
-    summary.innerHTML = `זמן ה״הילוך הידני״ שלך: לקח למוח שלך <strong>${diff} מילישניות</strong> לכבות את הטייס האוטומטי ולהתגבר על הבלבול!`;
+    summary.innerHTML = `זמן ה״מאבק״ שלכם: הקונפליקט הפנימי הזה עיכב אתכם בדיוק ב-<strong>${diff} מילישניות</strong> בממוצע לכל מילה!`;
   } else if (diff < 0) {
-    summary.innerHTML = `מדהים! הטייס האוטומטי שלך עובד הפוך - היית מהיר/ה יותר ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
+    summary.innerHTML = `מדהים! הצלחתם לנצח את האינסטינקט והייתם מהירים יותר במילים המבלבלות ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
   } else {
-    summary.innerHTML = `וואו, המהירות שלך הייתה זהה לחלוטין בשני המצבים!`;
+    summary.innerHTML = `וואו, המהירות שלך הייתה זהה לחלוטין בשני המצבים! אין שום עיכוב!`;
   }
 
   // Assign Focus Profile
@@ -992,17 +992,17 @@ function calculatePersonalInsight() {
   if (diff > 0) {
     profileContainer.classList.add('show');
     if (diff < 150) {
-      pIcon.textContent = '🎯';
-      pTitle.textContent = 'פרופיל: פקח/ית טיסה';
-      pDesc.textContent = 'יש לך יכולת נדירה להתעלם מהסחות דעת ולהתרכז במידע החשוב באמת!';
+      pIcon.textContent = '🧘';
+      pTitle.textContent = 'פרופיל: מאסטר בקונפליקטים';
+      pDesc.textContent = 'יש לך יכולת פנומנלית להשתיק את האינסטינקטים ולנצח במשיכת החבל מיד!';
     } else if (diff <= 300) {
       pIcon.textContent = '⚖️';
-      pTitle.textContent = 'פרופיל: נהג/ת מיומן/ת';
-      pDesc.textContent = 'יש לך איזון בריא בין קריאה אוטומטית לשליטה מודעת ותשומת לב לפרטים.';
+      pTitle.textContent = 'פרופיל: מיישב סכסוכים';
+      pDesc.textContent = 'המוח שלך מתמודד עם הקונפליקט בצורה יפה ומאוזנת.';
     } else {
-      pIcon.textContent = '📚';
-      pTitle.textContent = 'פרופיל: תולעת ספרים';
-      pDesc.textContent = 'המוח שלך כל כך מאומן וממוקד בקריאת מילים, שקשה לו מאוד להתעלם מהן!';
+      pIcon.textContent = '📖';
+      pTitle.textContent = 'פרופיל: שבוי של מילים';
+      pDesc.textContent = 'המוח שלך כל כך אוהב לקרוא, שהיה לו קשה מאוד לשחרר את החבל!';
     }
   }
 
@@ -1075,3 +1075,13 @@ async function submitData() {
   showScreen('screen-intro');
   console.log(`[STROOP] Session started. ID: ${STATE.participantId}`);
 })();
+
+// --- TESTING HOOK ---
+window.testInsight = function() {
+  STATE.trials = [];
+  for(let i=0; i<30; i++) STATE.trials.push({ is_task: true, accuracy: true, condition: 'congruent', rt_ms: 600 + Math.random()*200 });
+  for(let i=0; i<30; i++) STATE.trials.push({ is_task: true, accuracy: true, condition: 'incongruent', rt_ms: 850 + Math.random()*300 });
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.getElementById('screen-complete').classList.add('active');
+  showCompletionScreen();
+};

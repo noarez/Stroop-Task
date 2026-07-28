@@ -936,7 +936,61 @@ function showCompletionScreen() {
   DOM.dataStatusIcon().textContent = '⏳';
   DOM.dataStatusMsg().textContent  = 'שומר נתונים...';
 
+  calculatePersonalInsight();
   submitData();
+}
+
+function calculatePersonalInsight() {
+  // Only look at actual task trials (not practice) that were correct
+  const validTrials = STATE.trials.filter(t => t.is_task && t.accuracy && t.rt_ms != null);
+  
+  if (validTrials.length < 10) return; // Not enough data to be meaningful
+
+  let congSum = 0, congCount = 0;
+  let incongSum = 0, incongCount = 0;
+
+  validTrials.forEach(t => {
+    if (t.condition === 'congruent') {
+      congSum += t.rt_ms;
+      congCount++;
+    } else if (t.condition === 'incongruent') {
+      incongSum += t.rt_ms;
+      incongCount++;
+    }
+  });
+
+  if (congCount === 0 || incongCount === 0) return;
+
+  const congAvg = Math.round(congSum / congCount);
+  const incongAvg = Math.round(incongSum / incongCount);
+  const diff = incongAvg - congAvg;
+
+  // Max value for CSS bar scaling (usually around 1500ms is a safe max for average RT)
+  const maxRt = Math.max(congAvg, incongAvg, 1200); 
+  const congPct = Math.min((congAvg / maxRt) * 100, 100);
+  const incongPct = Math.min((incongAvg / maxRt) * 100, 100);
+
+  // Update UI
+  document.getElementById('time-congruent').textContent = congAvg + 'ms';
+  document.getElementById('time-incongruent').textContent = incongAvg + 'ms';
+
+  const summary = document.getElementById('insight-summary');
+  if (diff > 0) {
+    summary.innerHTML = `לקח למוח שלך בממוצע <strong>${diff} מילישניות</strong> יותר לעבד מילים מבלבלות!`;
+  } else if (diff < 0) {
+    summary.innerHTML = `מדהים! היית מהיר/ה יותר במילים מבלבלות ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
+  } else {
+    summary.innerHTML = `וואו, המהירות שלך הייתה זהה לחלוטין בשני המצבים!`;
+  }
+
+  const container = document.getElementById('insight-container');
+  container.classList.remove('hidden');
+
+  // Trigger animations shortly after showing
+  setTimeout(() => {
+    document.getElementById('bar-congruent').style.width = congPct + '%';
+    document.getElementById('bar-incongruent').style.width = incongPct + '%';
+  }, 100);
 }
 
 // ══════════════════════════════════════════

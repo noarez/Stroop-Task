@@ -218,6 +218,38 @@
         <div id="data-status-msg">שומר נתונים...</div>
       </div>
 
+      <div id="insight-container" class="insight-container hidden">
+        <h3 class="insight-title">האם המילים המבלבלות האטו אותך? 🧠</h3>
+        <p class="insight-desc">
+          בלי לשים לב, המוח שלנו קורא מילים באופן אוטומטי. כשהצבע לא תואם למילה (למשל המילה "אדום" כתובה בירוק), לוקח לנו יותר זמן להפריד בין המשמעות לצבע. <strong>זהו אפקט סטרופ!</strong>
+        </p>
+        
+        <div class="insight-bars">
+          <div class="insight-row">
+            <span class="insight-label">מילים תואמות</span>
+            <div class="insight-bar-wrapper">
+              <div id="bar-congruent" class="insight-bar congruent-bar"></div>
+            </div>
+            <span id="time-congruent" class="insight-time">0ms</span>
+          </div>
+          <div class="insight-row">
+            <span class="insight-label">מילים מבלבלות</span>
+            <div class="insight-bar-wrapper">
+              <div id="bar-incongruent" class="insight-bar incongruent-bar"></div>
+            </div>
+            <span id="time-incongruent" class="insight-time">0ms</span>
+          </div>
+        </div>
+
+        <div class="insight-summary" id="insight-summary">
+          <!-- Text injected via JS -->
+        </div>
+
+        <div class="insight-fun-fact">
+          <strong>💡 הידעת?</strong> מחקרים מראים שאנשים הדוברים מספר שפות מפתחים ״שליטה קוגניטיבית״ חזקה יותר מה שעוזר להם לסנן הפרעות באופן יעיל ולצמצם את האפקט. זה בדיוק מה שאנחנו חוקרים!
+        </div>
+      </div>
+
       <p class="session-id-note">מזהה סשן: <span id="session-id-display"></span></p>
     </div>
   </div>

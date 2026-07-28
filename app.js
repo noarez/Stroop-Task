@@ -976,11 +976,34 @@ function calculatePersonalInsight() {
 
   const summary = document.getElementById('insight-summary');
   if (diff > 0) {
-    summary.innerHTML = `לקח למוח שלך בממוצע <strong>${diff} מילישניות</strong> יותר לעבד מילים מבלבלות!`;
+    summary.innerHTML = `זמן ה״הילוך הידני״ שלך: לקח למוח שלך <strong>${diff} מילישניות</strong> לכבות את הטייס האוטומטי ולהתגבר על הבלבול!`;
   } else if (diff < 0) {
-    summary.innerHTML = `מדהים! היית מהיר/ה יותר במילים מבלבלות ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
+    summary.innerHTML = `מדהים! הטייס האוטומטי שלך עובד הפוך - היית מהיר/ה יותר ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
   } else {
     summary.innerHTML = `וואו, המהירות שלך הייתה זהה לחלוטין בשני המצבים!`;
+  }
+
+  // Assign Focus Profile
+  const profileContainer = document.getElementById('insight-profile');
+  const pIcon = document.getElementById('profile-icon');
+  const pTitle = document.getElementById('profile-title');
+  const pDesc = document.getElementById('profile-desc');
+
+  if (diff > 0) {
+    profileContainer.classList.add('show');
+    if (diff < 150) {
+      pIcon.textContent = '🎯';
+      pTitle.textContent = 'פרופיל: פקח/ית טיסה';
+      pDesc.textContent = 'יש לך יכולת נדירה להתעלם מהסחות דעת ולהתרכז במידע החשוב באמת!';
+    } else if (diff <= 300) {
+      pIcon.textContent = '⚖️';
+      pTitle.textContent = 'פרופיל: נהג/ת מיומן/ת';
+      pDesc.textContent = 'יש לך איזון בריא בין קריאה אוטומטית לשליטה מודעת ותשומת לב לפרטים.';
+    } else {
+      pIcon.textContent = '📚';
+      pTitle.textContent = 'פרופיל: תולעת ספרים';
+      pDesc.textContent = 'המוח שלך כל כך מאומן וממוקד בקריאת מילים, שקשה לו מאוד להתעלם מהן!';
+    }
   }
 
   const container = document.getElementById('insight-container');

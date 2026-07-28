@@ -51,7 +51,7 @@ test.describe('Stroop UI & Developer Hook Smoke Tests', () => {
     });
 
     // Check titles and text have valid non-transparent colors
-    const title = page.locator('#insight-container .insight-title');
+    const title = page.locator('#profile-title');
     await expect(title).toBeVisible();
     const color = await title.evaluate((el) => window.getComputedStyle(el).color);
     expect(color).not.toBe('rgba(0, 0, 0, 0)');

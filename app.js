@@ -974,13 +974,20 @@ function calculatePersonalInsight() {
   document.getElementById('time-congruent').textContent = congAvg + 'ms';
   document.getElementById('time-incongruent').textContent = incongAvg + 'ms';
 
+  const heroDiff = document.getElementById('hero-stat-diff');
+  if (heroDiff) {
+    heroDiff.textContent = (diff >= 0 ? '+' : '') + diff + 'ms';
+  }
+
   const summary = document.getElementById('insight-summary');
-  if (diff > 0) {
-    summary.innerHTML = `זמן הדיכוי שלכם: ההתגברות על הרגל הקריאה האוטומטי עיכבה אתכם בדיוק ב-<strong>${diff} מילישניות</strong> בממוצע לכל מילה!`;
-  } else if (diff < 0) {
-    summary.innerHTML = `מדהים! הצלחתם לנצח את הרגל הקריאה שלכם והייתם מהירים יותר במילים המבלבלות ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
-  } else {
-    summary.innerHTML = `וואו, המהירות שלך הייתה זהה לחלוטין בשני המצבים! אין שום עיכוב!`;
+  if (summary) {
+    if (diff > 0) {
+      summary.innerHTML = `זמן הדיכוי שלכם: ההתגברות על הרגל הקריאה האוטומטי עיכבה אתכם בדיוק ב-<strong>${diff} מילישניות</strong> בממוצע לכל מילה!`;
+    } else if (diff < 0) {
+      summary.innerHTML = `מדהים! הצלחתם לנצח את הרגל הקריאה שלכם והייתם מהירים יותר במילים המבלבלות ב-<strong>${Math.abs(diff)} מילישניות</strong>!`;
+    } else {
+      summary.innerHTML = `וואו, המהירות שלך הייתה זהה לחלוטין בשני המצבים! אין שום עיכוב!`;
+    }
   }
 
   // Assign Focus Profile

@@ -33,9 +33,10 @@ test.describe('Stroop UI & Developer Hook Smoke Tests', () => {
     const profileCard = page.locator('#insight-profile');
     await expect(page.locator('#profile-title')).not.toBeEmpty();
 
-    // Verify bars exist
+    // Verify bars & Hebrew units exist
     await expect(page.locator('#bar-congruent')).toBeVisible();
     await expect(page.locator('#bar-incongruent')).toBeVisible();
+    await expect(page.locator('#time-congruent')).toContainText('מ״ש');
 
     // Verify research explanation card is visible
     await expect(page.locator('.open-insight-card')).toBeVisible();

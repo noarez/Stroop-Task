@@ -446,6 +446,15 @@ strong {
   flex-shrink: 0;
 }
 
+.seamless-profile-category {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
 .seamless-profile-title {
   font-size: 1.25rem;
   font-weight: 800;

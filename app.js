@@ -971,12 +971,12 @@ function calculatePersonalInsight() {
   const incongPct = Math.min((incongAvg / maxRt) * 100, 100);
 
   // Update UI
-  document.getElementById('time-congruent').textContent = congAvg + 'ms';
-  document.getElementById('time-incongruent').textContent = incongAvg + 'ms';
+  document.getElementById('time-congruent').textContent = congAvg + ' מ״ש';
+  document.getElementById('time-incongruent').textContent = incongAvg + ' מ״ש';
 
   const heroDiff = document.getElementById('hero-stat-diff');
   if (heroDiff) {
-    heroDiff.textContent = (diff >= 0 ? '+' : '') + diff + 'ms';
+    heroDiff.textContent = (diff >= 0 ? '+' : '') + diff + ' מ״ש';
   }
 
   const summary = document.getElementById('insight-summary');
@@ -990,26 +990,31 @@ function calculatePersonalInsight() {
     }
   }
 
-  // Assign Focus Profile
+  // Assign Focus Profile & Task Insight
   const profileContainer = document.getElementById('insight-profile');
+  const pCategory = document.getElementById('profile-category');
   const pIcon = document.getElementById('profile-icon');
   const pTitle = document.getElementById('profile-title');
   const pDesc = document.getElementById('profile-desc');
 
+  if (pCategory) {
+    pCategory.textContent = '🧠 תוצאת המטלה שלך';
+  }
+
   if (diff > 0) {
     profileContainer.classList.add('show');
     if (diff < 150) {
-      pIcon.textContent = '🌟';
-      pTitle.textContent = 'הפרופיל שלך: גמישות קוגניטיבית גבוהה';
-      pDesc.textContent = 'הצלחתם להסיט את הקשב מהרגל הקריאה שלכם במהירות מרשימה.';
+      pIcon.textContent = '⚡';
+      pTitle.textContent = 'תגובה מהירה וגמישה';
+      pDesc.textContent = 'הצלחתם להפריד במהירות מרשימה בין צבע הדיו למשמעות המילה!';
     } else if (diff <= 300) {
-      pIcon.textContent = '📊';
-      pTitle.textContent = 'הפרופיל שלך: הפרעת קריאה תקינה';
-      pDesc.textContent = 'הרגל הקריאה שלכם מבוסס וחזק, מה שיוצר עיכוב טיפוסי ובריא במוח.';
+      pIcon.textContent = '🎯';
+      pTitle.textContent = 'השפעת קריאה טבעית';
+      pDesc.textContent = 'הרגל הקריאה שלכם חזק ואוטומטי, ולכן המוח לקח שבריר שנייה נוסף להתמקד בצבע.';
     } else {
       pIcon.textContent = '📖';
-      pTitle.textContent = 'הפרופיל שלך: אוטומטיות קריאה חזקה';
-      pDesc.textContent = 'המסלולים במוח שלכם לקריאת מילים הם כל כך מהירים ואוטומטיים, שקשה לכם מאוד להתעלם מהם!';
+      pTitle.textContent = 'הרגל קריאה עמוק ומהיר';
+      pDesc.textContent = 'המוח שלכם מתורגל בקריאה אוטומטית כל כך, שנדרש לכם מאמץ קשבי מיוחד כדי להתעלם מהמילה!';
     }
   }
 

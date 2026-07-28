@@ -431,21 +431,26 @@ strong {
 .seamless-profile {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   text-align: right;
+  background: var(--bg-card);
+  padding: 18px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .seamless-profile-icon {
-  font-size: 2.6rem;
+  font-size: 3.2rem;
   line-height: 1;
   flex-shrink: 0;
 }
 
 .seamless-profile-title {
-  font-size: 1.12rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--accent-dark);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -455,9 +460,10 @@ strong {
 }
 
 .seamless-profile-desc {
-  font-size: 0.9rem;
-  color: var(--text-dim);
-  line-height: 1.45;
+  font-size: 0.95rem;
+  color: var(--text);
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 .stat-divider {

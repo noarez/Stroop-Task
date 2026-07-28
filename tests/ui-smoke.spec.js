@@ -37,10 +37,8 @@ test.describe('Stroop UI & Developer Hook Smoke Tests', () => {
     await expect(page.locator('#bar-congruent')).toBeVisible();
     await expect(page.locator('#bar-incongruent')).toBeVisible();
 
-    // Verify accordion opens on click
-    const accordionBtn = page.locator('#acc-insight-explanation .accordion-toggle');
-    await accordionBtn.click();
-    await expect(page.locator('#acc-insight-explanation')).toHaveClass(/open/);
+    // Verify research explanation card is visible
+    await expect(page.locator('.open-insight-card')).toBeVisible();
   });
 
   test('Light Mode rendering maintains high contrast and visibility', async ({ page }) => {

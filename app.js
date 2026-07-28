@@ -1000,15 +1000,15 @@ function calculatePersonalInsight() {
     profileContainer.classList.add('show');
     if (diff < 150) {
       pIcon.textContent = '🌟';
-      pTitle.textContent = 'פרופיל: גמישות קוגניטיבית גבוהה';
+      pTitle.textContent = 'הפרופיל שלך: גמישות קוגניטיבית גבוהה';
       pDesc.textContent = 'הצלחתם להסיט את הקשב מהרגל הקריאה שלכם במהירות מרשימה.';
     } else if (diff <= 300) {
       pIcon.textContent = '📊';
-      pTitle.textContent = 'פרופיל: הפרעת קריאה תקינה';
+      pTitle.textContent = 'הפרופיל שלך: הפרעת קריאה תקינה';
       pDesc.textContent = 'הרגל הקריאה שלכם מבוסס וחזק, מה שיוצר עיכוב טיפוסי ובריא במוח.';
     } else {
       pIcon.textContent = '📖';
-      pTitle.textContent = 'פרופיל: אוטומטיות קריאה חזקה';
+      pTitle.textContent = 'הפרופיל שלך: אוטומטיות קריאה חזקה';
       pDesc.textContent = 'המסלולים במוח שלכם לקריאת מילים הם כל כך מהירים ואוטומטיים, שקשה לכם מאוד להתעלם מהם!';
     }
   }

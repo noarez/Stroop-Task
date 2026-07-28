@@ -392,7 +392,7 @@ strong {
 }
 
 /* ══════════════════════════════════════════ */
-/* SEAMLESS SINGLE-CARD DASHBOARD (ZERO SUB-CARDS) */
+/* GESTALT UNIFIED RESULTS DASHBOARD         */
 /* ══════════════════════════════════════════ */
 
 .completion-card {
@@ -417,12 +417,21 @@ strong {
   display: none;
 }
 
-/* Seamless Profile (No Sub-Card Box) */
+/* Gestalt Unified Results Block (Proximity & Common Region) */
+.unified-results-block {
+  background: var(--bg-card2);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
 .seamless-profile {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 8px 0;
   text-align: right;
 }
 
@@ -433,7 +442,7 @@ strong {
 }
 
 .seamless-profile-title {
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 800;
   color: var(--accent-dark);
   margin-bottom: 2px;
@@ -451,10 +460,10 @@ strong {
   line-height: 1.45;
 }
 
-/* Seamless Stat Group */
-.seamless-stat-group {
-  text-align: center;
-  padding: 8px 0;
+.stat-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
 }
 
 .hero-stat-number {
@@ -477,7 +486,7 @@ strong {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin: 12px 0;
+  margin-top: 12px;
 }
 
 .insight-row {
@@ -497,7 +506,7 @@ strong {
 .insight-bar-wrapper {
   flex: 1;
   height: 14px;
-  background: var(--bg-card2);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 99px;
   overflow: hidden;
@@ -525,6 +534,30 @@ strong {
   font-weight: 700;
   color: var(--text);
   text-align: left;
+}
+
+/* Open Research Explanation Card (Always Open) */
+.open-insight-card {
+  text-align: right;
+  padding: 18px 20px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-top: 16px;
+}
+
+.open-insight-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.insight-desc {
+  font-size: 0.92rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 
 .insight-fun-fact-inline {

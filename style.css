@@ -42,7 +42,7 @@
   --red:     #e05252;
   --blue:    #5272e0;
   --green:   #52b46b;
-  --yellow:  #e8c000;
+  --yellow:  #e8b100;
 
   --correct:   #56c479;
   --incorrect: #e05252;
@@ -93,7 +93,7 @@
     --grad-accent: linear-gradient(90deg, #4f6ef7, #7c5ef5);
     --grad-btn:    linear-gradient(135deg, #3656d6 0%, #4f6ef7 100%);
 
-    --yellow: #ca8a04;
+    --yellow: #e8b100;
 
     --shadow:    0 32px 80px rgba(0, 0, 0, 0.12);
     --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.08);
@@ -1375,7 +1375,7 @@ select option {
 /* ── Feedback ── */
 .feedback {
   position: fixed;
-  bottom: 220px;
+  bottom: 245px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 1.4rem;
@@ -1384,7 +1384,7 @@ select option {
   border-radius: 50px;
   animation: feedbackPop 0.22s var(--spring) both;
   white-space: nowrap;
-  z-index: 20;
+  z-index: 30;
 }
 
 .feedback.correct {
@@ -1425,15 +1425,15 @@ select option {
 /* ── Countdown bar ── */
 .countdown-bar-wrap {
   position: fixed;
-  bottom: 185px;
+  bottom: 200px;
   left: 50%;
   transform: translateX(-50%);
   width: min(480px, calc(100vw - 32px));
-  height: 2px;
+  height: 3px;
   background: var(--border);
   border-radius: 99px;
   overflow: hidden;
-  z-index: 14;
+  z-index: 25;
 }
 
 .countdown-bar {

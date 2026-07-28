@@ -28,7 +28,7 @@ const COLORS = [
   { word: 'אדום',  color: '#e05252', colorName: 'אדום' },
   { word: 'כחול',  color: '#5272e0', colorName: 'כחול' },
   { word: 'ירוק',  color: '#52b46b', colorName: 'ירוק' },
-  { word: 'צהוב',  color: '#c9b020', colorName: 'צהוב' },
+  { word: 'צהוב',  color: 'var(--yellow)', colorName: 'צהוב' },
 ];
 
 // ══════════════════════════════════════════

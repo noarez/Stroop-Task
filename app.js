@@ -31,11 +31,29 @@ const COLORS = [
   { word: 'צהוב',  color: 'var(--yellow)', colorName: 'צהוב' },
 ];
 
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const IS_TEST_MODE = URL_PARAMS.get('test') === 'true' ||
+                     URL_PARAMS.get('test') === '1' ||
+                     URL_PARAMS.get('mode') === 'test' ||
+                     URL_PARAMS.get('preview') === 'true';
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+
+function generateSessionId() {
+  const ts  = Date.now().toString(36).toUpperCase();
+  const rnd = Math.random().toString(36).substring(2, 7).toUpperCase();
+  const prefix = IS_TEST_MODE ? 'TEST' : 'SP';
+  return `${prefix}-${ts}-${rnd}`;
+}
+
 // ══════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════
 
 const STATE = {
+  isTestMode: IS_TEST_MODE,
   participantId: generateSessionId(),
   age: null,
   gender: null,
@@ -54,16 +72,6 @@ const STATE = {
   dataIntegrityOk: true,
   timeoutId: null,
 };
-
-// ══════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════
-
-function generateSessionId() {
-  const ts  = Date.now().toString(36).toUpperCase();
-  const rnd = Math.random().toString(36).substring(2, 7).toUpperCase();
-  return `SP-${ts}-${rnd}`;
-}
 
 function shuffle(arr) {
   const a = [...arr];
@@ -718,6 +726,12 @@ function addLanguageBlock() {
 // ══════════════════════════════════════════
 
 function startPractice() {
+  // Bot Protection: Block execution if demographic wizard was bypassed
+  if (STATE.age === null) {
+    console.warn('[SECURITY] Blocked attempt to start task without demographics.');
+    return;
+  }
+  
   STATE.currentBlock    = 'practice';
   STATE.trialQueue      = generateTrials(CONFIG.PRACTICE_TRIALS, true);
   STATE.currentTrialIndex = 0;
@@ -728,6 +742,12 @@ function startPractice() {
 }
 
 function startMain() {
+  // Bot Protection: Block execution if demographic wizard was bypassed
+  if (STATE.age === null) {
+    console.warn('[SECURITY] Blocked attempt to start task without demographics.');
+    return;
+  }
+
   STATE.currentBlock    = 'main';
   STATE.trialQueue      = generateTrials(CONFIG.MAIN_TRIALS, false);
   STATE.currentTrialIndex = 0;
@@ -931,7 +951,9 @@ function validateDataIntegrity(record) {
 
 function showCompletionScreen() {
   showScreen('screen-complete');
-  DOM.sessionIdDisplay().textContent = STATE.participantId;
+  DOM.sessionIdDisplay().textContent = IS_TEST_MODE
+    ? `${STATE.participantId} (מצב בדיקה — לא ייכלל במאגר האורגני)`
+    : STATE.participantId;
 
   DOM.dataStatusIcon().textContent = '⏳';
   DOM.dataStatusMsg().textContent  = 'שומר נתונים...';
@@ -1049,7 +1071,9 @@ async function submitData() {
 
     if (json.ok) {
       statusIcon.textContent = '💾';
-      statusMsg.textContent  = `הנתונים נשמרו בהצלחה — ${json.saved} ניסיונות`;
+      statusMsg.textContent  = IS_TEST_MODE
+        ? `נשמר כנתוני בדיקה — ${json.saved} ניסיונות (מופרד מנתונים אורגניים)`
+        : `הנתונים נשמרו בהצלחה — ${json.saved} ניסיונות`;
     } else {
       throw new Error(json.error || 'Unknown server error');
     }
@@ -1075,7 +1099,17 @@ async function submitData() {
 
 (function init() {
   const sidEl = document.getElementById('session-id-display');
-  if (sidEl) sidEl.textContent = STATE.participantId;
+  if (sidEl) {
+    sidEl.textContent = IS_TEST_MODE
+      ? `${STATE.participantId} (מצב בדיקה)`
+      : STATE.participantId;
+  }
+
+  if (IS_TEST_MODE) {
+    const banner = document.getElementById('test-mode-banner');
+    if (banner) banner.classList.remove('hidden');
+    console.log(`[STROOP] 🛠️ Running in TEST MODE. Session ID: ${STATE.participantId} (filtered out from organic research data)`);
+  }
 
   // Wire color-button click handlers
   document.querySelectorAll('#response-buttons .color-btn').forEach(btn => {
@@ -1090,6 +1124,9 @@ async function submitData() {
 
 // --- TESTING HOOK ---
 window.testInsight = function() {
+  if (!STATE.participantId || !STATE.participantId.startsWith('TEST-')) {
+    STATE.participantId = `TEST-${Date.now().toString(36).toUpperCase()}-DEV`;
+  }
   STATE.trials = [];
   for(let i=0; i<30; i++) STATE.trials.push({ is_task: true, accuracy: true, condition: 'congruent', rt_ms: 600 + Math.random()*200 });
   for(let i=0; i<30; i++) STATE.trials.push({ is_task: true, accuracy: true, condition: 'incongruent', rt_ms: 850 + Math.random()*300 });

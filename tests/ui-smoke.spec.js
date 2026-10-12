@@ -61,4 +61,28 @@ test.describe('Stroop UI & Developer Hook Smoke Tests', () => {
     expect(color).not.toBe('transparent');
   });
 
+  test('Default mode generates SP- participant ID and test banner is hidden', async ({ page }) => {
+    await page.goto('/');
+    const sid = await page.locator('#session-id-display').textContent();
+    expect(sid).toMatch(/^SP-/);
+    await expect(page.locator('#test-mode-banner')).toHaveClass(/hidden/);
+  });
+
+  test('Test mode (?test=true) generates TEST- participant ID and shows test banner with skip button', async ({ page }) => {
+    await page.goto('/?test=true');
+    const sid = await page.locator('#session-id-display').textContent();
+    expect(sid).toMatch(/^TEST-/);
+    await expect(page.locator('#test-mode-banner')).not.toHaveClass(/hidden/);
+    await expect(page.locator('#test-mode-banner')).toBeVisible();
+
+    // Click the quick-skip button directly in the UI
+    const skipBtn = page.locator('#skip-to-results-btn');
+    await expect(skipBtn).toBeVisible();
+    await skipBtn.click();
+
+    await expect(page.locator('#screen-complete')).toHaveClass(/active/);
+    const completeSid = await page.locator('#session-id-display').textContent();
+    expect(completeSid).toContain('TEST-');
+  });
+
 });

@@ -19,6 +19,13 @@
 
 <body>
 
+  <!-- ── Test Mode Indicator (activated with ?test=true) ── -->
+  <aside class="test-mode-banner hidden" id="test-mode-banner" role="status" aria-label="מצב בדיקה">
+    <span class="test-mode-pill">🛠️ מצב בדיקה</span>
+    <span class="test-mode-note">מסונן מהמאגר האורגני</span>
+    <button type="button" id="skip-to-results-btn" class="test-mode-skip-btn" onclick="window.testInsight()" title="דלג ישירות למסך התוצאות והתובנות">⚡ קפוץ לתוצאות</button>
+  </aside>
+
   <!-- ── Story Progress Bar (shown on demographics) ── -->
   <div class="story-bar-container" id="story-bar-container">
     <div class="story-bar-fill" id="story-bar-fill"></div>
